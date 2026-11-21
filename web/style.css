@@ -19,7 +19,7 @@ html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--paper);color:var(--ink);
      font:16px/1.72 var(--sans);-webkit-font-smoothing:antialiased}
 a{color:var(--accent);text-decoration:none}
-a:hover{text-decoration:underline}
+a:hover{text-decoration:none}
 .wrap{max-width:1060px;margin:0 auto;padding:0 28px}
 .mono{font-family:var(--mono);font-size:12px}
 
@@ -165,17 +165,15 @@ footer .mono{color:var(--faint)}
 .card{position:relative}
 .card h2 a{color:inherit;text-decoration:none}
 .card .stretch::after{content:"";position:absolute;inset:0;z-index:1}
-.card .gh{position:relative;z-index:2;font-size:11px;color:var(--faint);
-          border-bottom:1px solid transparent;white-space:nowrap}
-.card .gh:hover{color:var(--accent);border-color:var(--accent)}
+.card .gh{position:relative;z-index:2;font-size:11px;color:var(--faint);white-space:nowrap}
+.card .gh:hover{color:var(--accent);text-decoration:none}
 .card:hover .gh{color:var(--muted)}
 .card .cta{white-space:nowrap}
 
 .gh-row{margin:0 0 16px}
-.gh-btn{display:inline-block;font-size:13px;color:var(--accent);
-        border-bottom:1px solid transparent;padding-bottom:1px}
-.gh-btn:hover{text-decoration:none;border-color:var(--accent)}
-.gh-btn.dead{color:var(--faint);border-style:dotted}
+.gh-btn{display:inline-block;font-size:13px;color:var(--accent)}
+.gh-btn:hover{color:var(--ink);text-decoration:none}
+.gh-btn.dead{color:var(--faint)}
 
 .card .repo{margin:3px 0 9px;font-size:11px;color:var(--faint);
             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -193,7 +191,7 @@ a.tag:hover{text-decoration:none;border-color:#c9c2b4;color:var(--ink)}
 .banner b{color:var(--ink)}
 .banner a{color:var(--accent)}
 .gh-btn.dead{cursor:default}
-.gh-btn.dead:hover{border-color:transparent}
+.gh-btn.dead:hover{color:var(--faint)}
 .card .gh.archived{color:#8a7a5e}
 .banner.muted{border-left-color:#b3ada1}
 
@@ -252,7 +250,7 @@ button.tag:active,a.tag:active{transform:scale(.97)}
 button.tag,a.tag{transition:background-color .15s ease,border-color .15s ease,color .15s ease,transform .12s ease}
 
 /* 外链按钮 */
-.gh-btn{transition:border-color .15s ease,color .15s ease}
+.gh-btn{transition:color .15s ease}
 
 /* 顶栏滚动后加强分隔 */
 .toolbar{transition:background-color .25s ease}
