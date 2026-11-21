@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.DS_Store
+
+# 构建产物与本地状态，不进版本库
+public/
+data/link-status.json
