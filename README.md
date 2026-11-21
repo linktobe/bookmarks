@@ -119,6 +119,17 @@ python scripts/check_links.py
 
 样式表引用带内容哈希（`style.css?v=xxxxxxxx`），修改样式后无需担心浏览器沿用旧文件。
 
+## 本地令牌（可选）
+
+`scripts/` 下的脚本会调用 GitHub API。未认证时配额为 60 次/小时，按 IP 计算，连续添加多条时容易用尽。
+
+配置一个只读令牌后提升至 5000 次/小时。令牌按以下顺序读取：
+
+1. 环境变量 `GITHUB_TOKEN` 或 `GH_TOKEN`
+2. 本地文件 `.secrets/github_token.txt`（位于仓库之外，不会被提交）
+
+令牌无需勾选任何 scope，仅需读取公开仓库。工作流中已自动注入 `GITHUB_TOKEN`，无需额外配置。
+
 ## 本地预览
 
 ```bash

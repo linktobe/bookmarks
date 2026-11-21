@@ -16,24 +16,19 @@
 from __future__ import annotations
 
 import json
-import os
 import sys
 import urllib.error
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
+import _auth
+
 ROOT = Path(__file__).resolve().parent.parent
 ENTRIES = ROOT / "entries"
 OUT = ROOT / "data" / "link-status.json"
 
-HEADERS = {
-    "User-Agent": "gh-collection-link-check/1.0",
-    "Accept": "application/vnd.github+json",
-}
-TOKEN = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN") or ""
-if TOKEN:
-    HEADERS["Authorization"] = f"Bearer {TOKEN}"
+HEADERS = _auth.headers()
 
 
 def repo_of(path: Path) -> str:
@@ -85,6 +80,7 @@ def main() -> int:
         except Exception:
             pass
 
+    print(_auth.describe())
     repos = sorted({r for r in (repo_of(p) for p in ENTRIES.glob("*.md")) if r})
     if not repos:
         print("entries/ 里没有 repo 字段")

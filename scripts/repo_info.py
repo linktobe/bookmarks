@@ -11,16 +11,15 @@
 from __future__ import annotations
 
 import json
-import os
 import re
 import sys
 import urllib.error
 import urllib.request
 
+import _auth
+
 API = "https://api.github.com"
-HEADERS = {"User-Agent": "gh-collection/1.0", "Accept": "application/vnd.github+json"}
-if os.environ.get("GITHUB_TOKEN"):
-    HEADERS["Authorization"] = f"Bearer {os.environ['GITHUB_TOKEN']}"
+HEADERS = _auth.headers()
 
 SEMVER = re.compile(r"^(?:[\w.-]+@)?v?\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$")
 
