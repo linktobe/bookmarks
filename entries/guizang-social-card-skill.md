@@ -11,6 +11,7 @@ why_runs: 未通过：属 Skill 形态，且渲染需 Node 与 Playwright
 why_alive: 最近一次提交于 2026-10-30
 why_docs: README 给出安装方式、模板与版式说明、渲染脚本用法
 why_release: 未通过：仓库无 release，仅提供 Skill 源文件与渲染脚本
+why_demo: 未通过：以版式模板为主，无独立示例工程
 one_liner: 生成小红书图文与公众号封面套图的技能，内置杂志风与瑞士版式共 28 种布局。
 tags: 设计, 图文, Skill
 ---

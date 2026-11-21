@@ -6,11 +6,12 @@ language: HTML
 gh_stars: 69400
 pushed: 2026-11-19
 added: 2026-11-21
-met: 维护活跃, 文档充分
+met: 维护活跃, 文档充分, 有示例
 why_runs: 未通过：该项目为 Skill 形态，需装入支持 Skill 的客户端方可使用
 why_alive: 最近一次提交于 2026-11-19
 why_docs: README 提供完整规范说明与自检脚本用法
 why_release: 未通过：无 release，仅提供源码与设计规范（单文件 HTML 与内联 SVG），无安装包
+why_demo: 附带多份示例图型与演示动图，可直接打开查看
 one_liner: 面向 Agent 的图表设计规范，产出为单文件 HTML 与内联 SVG，覆盖架构图、流程图、时序图等 45 类图型。
 tags: 设计, 图表
 ---

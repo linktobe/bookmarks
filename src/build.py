@@ -3,7 +3,7 @@
 """build —— entries/*.md → public/（收藏夹首页 + 详情页）。
 
 打分规则（写死在这里，改规则就改这个文件）：
-四条标准每条 1 分，满足几条就是几星。
+五条标准每条 1 分，满足几条就是几星。
 
   1 开箱可用    clone/下载后在 15 分钟内能看到效果
   2 解决真问题  有明确适用场景，不是玩具
@@ -35,14 +35,15 @@ PUBLIC = ROOT / "public"
 
 SITE_TITLE = "开源收藏夹"
 SITE_SUBTITLE = ("收录值得一试的开源项目。每个条目包含一句话概述、星级评定与标签。"
-                 "星级由四项标准逐条判定，满足几项即为几星，评定依据均可复查。")
+                 "星级由五项标准逐条判定，满足几项即为几星，评定依据均可复查。")
 
-# 四条标准，顺序即展示顺序
+# 五条标准，顺序即展示顺序
 CRITERIA = [
     ("runs", "开箱即用", "下载或克隆后 15 分钟内可观察到效果"),
     ("alive", "维护活跃", "近 6 个月内有提交或发布"),
     ("docs", "文档充分", "提供可直接照用的最小示例"),
     ("release", "版本规范", "有正式发布，且版本号遵循语义化版本"),
+    ("demo", "有示例", "仓库内提供可直接查看或运行的示例"),
 ]
 
 
@@ -213,7 +214,7 @@ def build_index(entries: list[dict], now: str, css_ver: str) -> str:
     <div><span class="k">更新</span><span class="v">{esc(now)}</span></div>
   </div>
   <details class="rubric" open>
-    <summary>评分标准（四项各计一分）</summary>
+    <summary>评分标准（五项各计一分）</summary>
     <ol>{"".join(f"<li><b>{esc(label)}</b>{esc(desc)}</li>" for _k, label, desc in CRITERIA)}</ol>
   </details>
 </header>
@@ -343,7 +344,7 @@ def build_detail(entry: dict, now: str, css_ver: str) -> str:
     <thead><tr><th>判定</th><th>标准</th><th>这个项目的情况</th></tr></thead>
     <tbody>{rows}</tbody>
   </table>
-  <p class="rubric-hint">表中各项均为该项目自身的判定说明；四项标准的通用定义见首页。</p>
+  <p class="rubric-hint">表中各项均为该项目自身的判定说明；五项标准的通用定义见首页。</p>
   <article class="md">{md.render(entry['body'])}</article>
 </main>
 <footer class="wrap">

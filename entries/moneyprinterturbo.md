@@ -11,6 +11,7 @@ why_runs: 未通过：依赖体积接近 1GB，另需 fluent-ffmpeg 等外部工
 why_alive: 最近一次提交于 2026-11-21
 why_docs: README 提供安装说明、脚本调用与参数示例
 why_release: 当前版本 v1.3.10；提供 Windows 一键启动包，另支持 macOS 11+、主流 Linux 与 Docker 部署
+why_demo: 未通过：仅提供配置模板，示例体现在文档与演示视频中
 one_liner: 由主题生成竖屏短视频的流水线，涵盖文案、素材、配音、字幕与合成。
 tags: 视频, 流水线
 ---

@@ -11,6 +11,7 @@ why_runs: 未通过：属于 Skill 形态，需装入支持 Skill 的客户端�
 why_alive: 最近一次提交于 2026-11-16
 why_docs: 随仓库提供 docs、tests、tools 目录及各平台 playbook
 why_release: 当前版本 v1.3.0；Skill 包形式，覆盖 Windows / macOS / Linux
+why_demo: 未通过：内容为 playbook 文档，无示例工程
 one_liner: 覆盖 Windows、macOS 与 Linux 的系统维护技能包，以结构化 playbook 组织诊断、清理、迁移与故障排查。
 tags: 系统维护, Skill
 ---

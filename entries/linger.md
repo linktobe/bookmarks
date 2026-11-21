@@ -11,6 +11,7 @@ why_runs: 未通过：需安装桌面应用并下载本地模型，首次启动�
 why_alive: 最近一次提交于 2026-11-21
 why_docs: 提供独立文档站，覆盖桌面版、Docker Compose 与源码构建三种安装方式
 why_release: 当前版本 desktop-v0.1.6；提供桌面安装包（macOS 未签名、Windows 与 Linux 有安装步骤），另支持 Docker Compose 部署
+why_demo: 未通过：仓库以应用源码为主，示例素材为测试夹具
 one_liner: 完全运行在本机的开源个人 AI 助手，以端侧模型与执行框架协同设计为特点。
 tags: 本地模型, Agent, 桌面应用
 ---

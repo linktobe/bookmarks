@@ -11,6 +11,7 @@ why_runs: 单文件分发，无需预装 Python 环境，解压后即可执行
 why_alive: 提交频率接近每日
 why_docs: 官方文档为每条命令提供可直接复制的示例
 why_release: 当前版本 0.13.9；提供 Windows / macOS / Linux 独立二进制，亦可经 pip 安装
+why_demo: 未通过：仓库内仅有测试夹具，示例以文档片段形式给出
 one_liner: 以 Rust 实现的 Python 包管理器，单文件分发，依赖解析速度显著高于 pip。
 tags: 工具链, Python
 ---

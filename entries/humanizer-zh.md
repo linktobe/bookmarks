@@ -11,6 +11,7 @@ why_runs: 未通过：属 Skill 形态，需装入支持 Skill 的客户端
 why_alive: 最近一次提交于 2026-09-23
 why_docs: README 给出三种安装方式、验证步骤与更新记录
 why_release: 未通过：仓库无 release，仅提供 Skill 源文件，需手动或经命令行安装
+why_demo: 未通过：示例写在 README 的改写对照中，无独立文件
 one_liner: 中文文本润色技能，用于清理文章、评论与文档中的空话、重复及模板化表达。
 tags: 文本润色, Skill
 ---

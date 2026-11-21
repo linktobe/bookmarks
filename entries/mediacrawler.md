@@ -11,6 +11,7 @@ why_runs: 未通过：需预装 uv、Node.js 16+ 与 Chrome，并完成各平台
 why_alive: 最近一次提交于 2026-11-17
 why_docs: README 覆盖两种安装路径、各平台命令、API 服务启动与参数说明
 why_release: 未通过：仓库无 release，仅提供源码，需自建运行环境
+why_demo: 未通过：仅环境变量模板，示例以命令形式给出
 one_liner: 面向小红书、抖音、快手、B 站、微博、贴吧与知乎的内容采集工具，支持笔记、视频与评论。
 tags: 抓取, 内容采集
 ---

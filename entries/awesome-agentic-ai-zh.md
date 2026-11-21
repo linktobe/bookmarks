@@ -6,11 +6,12 @@ language: Python
 gh_stars: 8842
 pushed: 2026-11-21
 added: 2026-11-21
-met: 开箱即用, 维护活跃, 文档充分, 版本规范
+met: 开箱即用, 维护活跃, 文档充分, 版本规范, 有示例
 why_runs: 文档仓库，克隆或访问线上站点即可阅读
 why_alive: 最近一次提交于 2026-11-21
 why_docs: 数百篇 Markdown，覆盖提示工程、工具调用、上下文、评测等阶段
 why_release: 当前版本 v2026.11.21；纯文档仓库，无安装包，浏览器即可阅读
+why_demo: examples 目录提供示例索引与说明，可直接阅读
 one_liner: 中文 Agentic AI 学习路线仓库，将领域拆分为十余个阶段并配以文档与示例。
 tags: 学习路线, 文档
 ---

@@ -11,6 +11,7 @@ why_runs: 未通过：需 uv 或 Node.js 22 以上环境，并配置模型与信
 why_alive: 最近一次提交于 2026-11-21
 why_docs: README 覆盖安装、配置、运行与定时任务说明
 why_release: 未通过：仓库无 release，仅提供源码，需自行部署
+why_demo: 未通过：仅环境变量模板，无示例数据
 one_liner: 自建的 AI 新闻雷达，聚合多个信息源并生成中英双语每日简报。
 tags: 资讯, AI, 聚合
 ---

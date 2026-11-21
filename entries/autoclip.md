@@ -6,11 +6,12 @@ language: Python
 gh_stars: 12412
 pushed: 2026-11-21
 added: 2026-11-21
-met: 维护活跃, 文档充分, 版本规范
+met: 维护活跃, 文档充分, 版本规范, 有示例
 why_runs: 未通过：需下载桌面版并配置模型服务或本地模型后方可出片
 why_alive: 最近一次提交于 2026-11-21
 why_docs: 提供安装指南、常见问题与 CLI / MCP 说明
 why_release: 当前版本 v1.5.8；桌面版支持 macOS Apple Silicon 与 Windows x64，另有 Docker 与 CLI / MCP 两种接入方式
+why_demo: 自带示例素材（封面与样片），可直接用于试跑
 one_liner: 将播客、访谈与课程等长视频一键剪成短视频的桌面工具，含字幕、封面与发布文案。
 tags: 视频, 剪辑, 桌面应用
 ---

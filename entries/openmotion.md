@@ -6,11 +6,12 @@ language: TypeScript
 gh_stars: 14244
 pushed: 2026-11-21
 added: 2026-11-21
-met: 维护活跃, 文档充分, 版本规范
+met: 维护活跃, 文档充分, 版本规范, 有示例
 why_runs: 未通过：需 Node.js 22 及以上与 npm 安装，或经由 ChatGPT 与 Agent Skill 接入
 why_alive: 最近一次提交于 2026-11-21
 why_docs: README 提供三种接入方式、安装命令与导出说明，另有 Motion.md 指南
 why_release: 当前版本 v0.2.0；以 npm 应用与 Agent Skill 形式分发，支持 macOS 与 Windows
+why_demo: docs 下的示例与模板目录提供可直接套用的成品
 one_liner: 开源动态图形工作室，可将参考视频转为可编辑动效，并导出为各平台竖屏或横屏视频。
 tags: 视频, 动效, Agent
 ---

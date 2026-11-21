@@ -11,6 +11,7 @@ why_runs: 未通过：属 Skill 形态，需装入支持 Skill 的 Agent 客户�
 why_alive: 最近一次提交于 2026-10-30
 why_docs: README 给出安装命令、模板说明与校验脚本用法
 why_release: 当前版本 v1.1.0；以 Agent Skill 形式分发，需在支持 Skill 的客户端中安装，无独立安装包
+why_demo: 未通过：以模板与说明为主，无独立示例工程
 one_liner: 面向 Agent 的幻灯片生成技能，输出自带演讲者视图的单文件 HTML 演示文稿。
 tags: 演示文稿, Skill
 ---
