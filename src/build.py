@@ -169,7 +169,7 @@ def build_index(entries: list[dict], now: str) -> str:
         for t in tags)
 
     cards: list[str] = []
-    for e in entries:
+    for idx, e in enumerate(entries):
         tags_html = "".join(
             f'<button class="tag" type="button" data-tag="{esc(t)}">{esc(t)}</button>'
             for t in e["tags"])
@@ -178,7 +178,7 @@ def build_index(entries: list[dict], now: str) -> str:
         if e["pushed"]:
             meta_bits.append(e["pushed"])
         gh = gh_link_html(e)
-        cards.append(f"""      <article class="card"
+        cards.append(f"""      <article class="card" style="--i:{idx}"
          data-tags="{esc(' '.join(e['tags']))}" data-search="{esc(searchable)}">
         <div class="top">
           <span class="stars" title="{e['score']} / 5">{stars_html(e['score'])}</span>
@@ -243,12 +243,18 @@ def build_index(entries: list[dict], now: str) -> str:
   var cards = [].slice.call(document.querySelectorAll('.card'));
   var empty = document.getElementById('empty');
   var active = 'all';
-  function apply() {{
+  function apply(animate) {{
     var text = q.value.trim().toLowerCase(), shown = 0;
     cards.forEach(function (c) {{
       var ok = (!text || c.dataset.search.indexOf(text) !== -1)
         && (active === 'all' || c.dataset.tags.split(' ').indexOf(active) !== -1);
-      c.hidden = !ok; if (ok) shown++;
+      if (ok && c.hidden) {{
+        c.hidden = false;
+        if (animate) {{ c.classList.remove('pop'); void c.offsetWidth; c.classList.add('pop'); }}
+      }} else if (!ok) {{
+        c.hidden = true;
+      }}
+      if (ok) shown++;
     }});
     empty.hidden = shown !== 0;
   }}
@@ -257,7 +263,7 @@ def build_index(entries: list[dict], now: str) -> str:
       var on = chip.getAttribute('aria-pressed') === 'true';
       document.querySelectorAll('.chip').forEach(function (c) {{ c.setAttribute('aria-pressed', 'false'); }});
       if (on) {{ active = 'all'; }} else {{ chip.setAttribute('aria-pressed', 'true'); active = chip.dataset.value; }}
-      apply();
+      apply(true);
     }});
   }});
   function setTag(value) {{
@@ -265,7 +271,7 @@ def build_index(entries: list[dict], now: str) -> str:
     document.querySelectorAll('.chip').forEach(function (c) {{
       c.setAttribute('aria-pressed', String(c.dataset.value === active));
     }});
-    apply();
+    apply(true);
   }}
 
   document.querySelectorAll('.tag').forEach(function (tag) {{
@@ -279,7 +285,12 @@ def build_index(entries: list[dict], now: str) -> str:
   var wanted = new URLSearchParams(location.search).get('tag');
   if (wanted) {{ setTag(wanted); }}
 
-  q.addEventListener('input', apply);
+  q.addEventListener('input', function () {{ apply(false); }});
+
+  var bar = document.querySelector('.toolbar');
+  function onScroll() {{ document.body.classList.toggle('scrolled', window.scrollY > 6); }}
+  window.addEventListener('scroll', onScroll, {{ passive: true }});
+  onScroll();
 }})();
 </script>
 </body>
@@ -289,11 +300,11 @@ def build_index(entries: list[dict], now: str) -> str:
 
 def build_detail(entry: dict, now: str) -> str:
     rows = "".join(
-        f'<tr class="{"hit" if key in entry["met"] else "miss"}">'
+        f'<tr class="{"hit" if key in entry["met"] else "miss"}" style="--i:{i}">'
         f'<td class="mark">{"✓" if key in entry["met"] else "✗"}</td>'
         f'<td class="name">{esc(label)}</td>'
         f'<td class="desc">{esc(entry["whys"].get(f"why_{key}") or desc)}</td></tr>'
-        for key, label, desc in CRITERIA)
+        for i, (key, label, desc) in enumerate(CRITERIA))
     tags_html = "".join(
         f'<a class="tag" href="../index.html?tag={quote(esc(t))}">{esc(t)}</a>'
         for t in entry["tags"])

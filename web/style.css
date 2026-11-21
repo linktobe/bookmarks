@@ -196,3 +196,71 @@ a.tag:hover{text-decoration:none;border-color:#c9c2b4;color:var(--ink)}
 .gh-btn.dead:hover{border-color:var(--line)}
 .card .gh.archived{color:#8a7a5e}
 .banner.muted{border-left-color:#b3ada1}
+
+/* ============================================================
+   动效：克制的入场与交互反馈
+   —— 全部只用 transform / opacity，且尊重 prefers-reduced-motion
+   ============================================================ */
+@keyframes riseIn{
+  from{opacity:0;transform:translateY(10px)}
+  to  {opacity:1;transform:none}
+}
+@keyframes fadeIn{
+  from{opacity:0}
+  to  {opacity:1}
+}
+@keyframes starPop{
+  0%  {opacity:0;transform:translateY(4px) scale(.96)}
+  60% {opacity:1;transform:translateY(0) scale(1.02)}
+  100%{opacity:1;transform:none}
+}
+
+@media (prefers-reduced-motion: no-preference){
+  /* 页头：分层入场 */
+  header .eyebrow{animation:fadeIn .45s ease-out both}
+  header h1{animation:riseIn .55s cubic-bezier(.2,.7,.3,1) both;animation-delay:.05s}
+  header .lede{animation:riseIn .55s cubic-bezier(.2,.7,.3,1) both;animation-delay:.12s}
+  header .summary,header .rubric{animation:riseIn .55s cubic-bezier(.2,.7,.3,1) both;animation-delay:.19s}
+  header .gh-row,header .score,header .meta{animation:riseIn .5s cubic-bezier(.2,.7,.3,1) both;animation-delay:.05s}
+
+  /* 卡片：逐张升起 */
+  .card{animation:riseIn .5s cubic-bezier(.2,.7,.3,1) backwards;
+        animation-delay:calc(var(--i, 0) * 45ms + 120ms)}
+  .card.pop{animation:riseIn .38s cubic-bezier(.2,.7,.3,1) backwards;animation-delay:0s}
+
+  /* 筛选栏 */
+  .toolbar{animation:fadeIn .4s ease-out both}
+
+  /* 详情页：评分表逐行 */
+  .rubric-table tbody tr{animation:riseIn .45s cubic-bezier(.2,.7,.3,1) backwards;
+                         animation-delay:calc(var(--i, 0) * 55ms + 160ms)}
+  .detail-head .stars.big{animation:starPop .5s cubic-bezier(.2,.7,.3,1) backwards;animation-delay:.1s}
+}
+
+/* 卡片悬停：轻微上浮 */
+.card{transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+.card:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(23,24,26,.06)}
+.card:hover .stars{transform:scale(1.05)}
+.card:hover .gh{color:var(--accent);border-color:var(--accent)}
+.stars{display:inline-block;transition:transform .18s ease}
+.card .gh{transition:color .15s ease,border-color .15s ease}
+
+/* 标签与 chip 的悬停过渡 */
+.chip,.tag{transition:background-color .15s ease,border-color .15s ease,color .15s ease}
+.chip:hover{transform:none}
+button.tag:active,a.tag:active{transform:scale(.97)}
+button.tag,a.tag{transition:background-color .15s ease,border-color .15s ease,color .15s ease,transform .12s ease}
+
+/* 外链按钮 */
+.gh-btn{transition:border-color .15s ease,color .15s ease,background-color .15s ease}
+.gh-btn:hover{background:#fff}
+
+/* 顶栏滚动后加强分隔 */
+.toolbar{transition:box-shadow .25s ease,background-color .25s ease}
+body.scrolled .toolbar{box-shadow:0 1px 14px rgba(23,24,26,.07);
+                       background:rgba(251,250,247,.98)}
+
+/* 站内跳转的淡入淡出（支持的浏览器生效，其余忽略） */
+@view-transition{navigation:auto}
+::view-transition-old(root){animation:fadeIn .18s ease-out reverse}
+::view-transition-new(root){animation:fadeIn .22s ease-out}
