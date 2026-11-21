@@ -1,19 +1,15 @@
 # -*- coding: utf-8 -*-
 """_auth —— 统一的 GitHub API 请求头。
 
-凭据来源按优先级：
-  1. 环境变量 GITHUB_TOKEN / GH_TOKEN
-  2. 本地配置文件（位于仓库之外，不纳入版本控制）
+凭据只从环境变量读取：
+  GITHUB_TOKEN 或 GH_TOKEN
 
-令牌只需能读公开仓库，无需任何 scope。文件不存在时退回匿名请求（60 次/小时）。
+未设置时退回匿名请求（60 次/小时，按 IP 计）。工作流中由 Actions 自动注入
+GITHUB_TOKEN，无需额外配置；本地运行时自行设置环境变量即可。
 """
 from __future__ import annotations
 
 import os
-from pathlib import Path
-
-# scripts/ 的上级是项目根，再上一级是 Dev/
-TOKEN_FILE = Path(__file__).resolve().parent.parent.parent.parent / ".secrets" / "github_token.txt"
 
 BASE = {
     "User-Agent": "gh-collection/1.0",
@@ -22,13 +18,7 @@ BASE = {
 
 
 def token() -> str:
-    env = (os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN") or "").strip()
-    if env:
-        return env
-    try:
-        return TOKEN_FILE.read_text(encoding="utf-8").strip()
-    except OSError:
-        return ""
+    return (os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN") or "").strip()
 
 
 def headers() -> dict:
