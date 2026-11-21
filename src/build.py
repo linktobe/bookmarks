@@ -16,6 +16,7 @@
 """
 from __future__ import annotations
 
+import hashlib
 import html
 import json
 import shutil
@@ -160,7 +161,7 @@ def link_warning(entry: dict) -> str:
     return ""
 
 
-def build_index(entries: list[dict], now: str) -> str:
+def build_index(entries: list[dict], now: str, css_ver: str) -> str:
     tags = sorted({t for e in entries for t in e["tags"]},
                   key=lambda t: (-sum(1 for e in entries if t in e["tags"]), t))
     chips = "".join(
@@ -199,7 +200,7 @@ def build_index(entries: list[dict], now: str) -> str:
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{esc(SITE_TITLE)}</title>
-<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="assets/style.css?v={css_ver}">
 </head>
 <body>
 <header class="wrap">
@@ -298,7 +299,7 @@ def build_index(entries: list[dict], now: str) -> str:
 """
 
 
-def build_detail(entry: dict, now: str) -> str:
+def build_detail(entry: dict, now: str, css_ver: str) -> str:
     rows = "".join(
         f'<tr class="{"hit" if key in entry["met"] else "miss"}" style="--i:{i}">'
         f'<td class="mark">{"✓" if key in entry["met"] else "✗"}</td>'
@@ -324,7 +325,7 @@ def build_detail(entry: dict, now: str) -> str:
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{esc(entry['title'])} · {esc(SITE_TITLE)}</title>
-<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/style.css?v={css_ver}">
 </head>
 <body>
 <header class="wrap detail-head">
@@ -369,16 +370,18 @@ def main() -> int:
     now = datetime.now().astimezone().strftime("%Y-%m-%d")
     (PUBLIC / "p").mkdir(parents=True, exist_ok=True)
     (PUBLIC / "assets").mkdir(parents=True, exist_ok=True)
-    shutil.copy2(ROOT / "web" / "style.css", PUBLIC / "assets" / "style.css")
+    css_bytes = (ROOT / "web" / "style.css").read_bytes()
+    (PUBLIC / "assets" / "style.css").write_bytes(css_bytes)
+    css_ver = hashlib.sha256(css_bytes).hexdigest()[:8]
     (PUBLIC / ".nojekyll").write_text("", encoding="utf-8")
 
     stale = {p.name for p in (PUBLIC / "p").glob("*.html")} - {f"{e['slug']}.html" for e in entries}
     for name in stale:
         (PUBLIC / "p" / name).unlink(missing_ok=True)
 
-    (PUBLIC / "index.html").write_text(build_index(entries, now), encoding="utf-8")
+    (PUBLIC / "index.html").write_text(build_index(entries, now, css_ver), encoding="utf-8")
     for entry in entries:
-        (PUBLIC / "p" / f"{entry['slug']}.html").write_text(build_detail(entry, now), encoding="utf-8")
+        (PUBLIC / "p" / f"{entry['slug']}.html").write_text(build_detail(entry, now, css_ver), encoding="utf-8")
 
     dist = {i: sum(1 for e in entries if e["score"] == i) for i in range(1, 6)}
     print("收录 %d 个 · 星级分布 %s" % (len(entries), dist))
