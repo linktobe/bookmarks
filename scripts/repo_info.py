@@ -21,7 +21,7 @@ import _auth
 API = "https://api.github.com"
 HEADERS = _auth.headers()
 
-SEMVER = re.compile(r"^(?:[\w.-]+@)?v?\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$")
+SEMVER = re.compile(r"^(?:[A-Za-z0-9._-]*[@-])?v?\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$")
 
 
 def get(path: str) -> dict | list | None:
