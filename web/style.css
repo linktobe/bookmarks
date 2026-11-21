@@ -172,10 +172,10 @@ footer .mono{color:var(--faint)}
 .card .cta{white-space:nowrap}
 
 .gh-row{margin:0 0 16px}
-.gh-btn{display:inline-block;font-size:12.5px;font-family:var(--mono);
-        padding:7px 12px;border:1px solid var(--line);border-radius:2px;
-        color:var(--ink);background:var(--card)}
-.gh-btn:hover{text-decoration:none;border-color:var(--ink)}
+.gh-btn{display:inline-block;font-size:13px;color:var(--accent);
+        border-bottom:1px solid transparent;padding-bottom:1px}
+.gh-btn:hover{text-decoration:none;border-color:var(--accent)}
+.gh-btn.dead{color:var(--faint);border-style:dotted}
 
 .card .repo{margin:3px 0 9px;font-size:11px;color:var(--faint);
             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -192,8 +192,8 @@ a.tag:hover{text-decoration:none;border-color:#c9c2b4;color:var(--ink)}
 .banner.bad{border-left-color:#b03a2e}
 .banner b{color:var(--ink)}
 .banner a{color:var(--accent)}
-.gh-btn.dead{color:var(--faint);border-style:dashed;cursor:default}
-.gh-btn.dead:hover{border-color:var(--line)}
+.gh-btn.dead{cursor:default}
+.gh-btn.dead:hover{border-color:transparent}
 .card .gh.archived{color:#8a7a5e}
 .banner.muted{border-left-color:#b3ada1}
 
@@ -252,13 +252,11 @@ button.tag:active,a.tag:active{transform:scale(.97)}
 button.tag,a.tag{transition:background-color .15s ease,border-color .15s ease,color .15s ease,transform .12s ease}
 
 /* 外链按钮 */
-.gh-btn{transition:border-color .15s ease,color .15s ease,background-color .15s ease}
-.gh-btn:hover{background:#fff}
+.gh-btn{transition:border-color .15s ease,color .15s ease}
 
 /* 顶栏滚动后加强分隔 */
-.toolbar{transition:box-shadow .25s ease,background-color .25s ease}
-body.scrolled .toolbar{box-shadow:0 1px 14px rgba(23,24,26,.07);
-                       background:rgba(251,250,247,.98)}
+.toolbar{transition:background-color .25s ease}
+body.scrolled .toolbar{background:rgba(251,250,247,.99)}
 
 /* 站内跳转的淡入淡出（支持的浏览器生效，其余忽略） */
 @view-transition{navigation:auto}
