@@ -6,9 +6,8 @@ language: Python
 gh_stars: 669
 pushed: 2026-11-16
 added: 2026-11-21
-met: 解决问题, 维护活跃, 文档充分, 版本规范
+met: 维护活跃, 文档充分, 版本规范
 why_runs: 未通过：属于 Skill 形态，需装入支持 Skill 的客户端；其命令亦受运行账户权限限制
-why_real: 系统故障排查与维护缺少统一流程，多依赖逐项试错
 why_alive: 最近一次提交于 2026-11-16
 why_docs: 随仓库提供 docs、tests、tools 目录及各平台 playbook
 why_release: 当前版本 v1.3.0；Skill 包形式，覆盖 Windows / macOS / Linux
@@ -24,7 +23,6 @@ tags: 系统维护, Skill
 ## 评分依据
 
 - **开箱即用**：未通过。该项目为 Skill 形态，需装入支持 Skill 的客户端；此外其命令（下载安装包、写入系统目录、修改注册表）受运行账户与文件沙箱限制，实际执行前需先确认前提。
-- **解决问题**：通过。
 - **维护活跃**：最近一次提交于 2026-11-16。
 - **文档充分**：随仓库提供 docs、tests、tools 目录及各平台 playbook。
 - **版本规范**：当前版本 v1.3.0，有正式 release。

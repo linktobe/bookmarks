@@ -6,9 +6,8 @@ language: HTML
 gh_stars: 30200
 pushed: 2026-10-30
 added: 2026-11-21
-met: 解决问题, 维护活跃, 文档充分, 版本规范
+met: 维护活跃, 文档充分, 版本规范
 why_runs: 未通过：属 Skill 形态，需装入支持 Skill 的 Agent 客户端
-why_real: 生成可直接放映的网页幻灯片，排版质感与演讲者支持往往需反复调校
 why_alive: 最近一次提交于 2026-10-30
 why_docs: README 给出安装命令、模板说明与校验脚本用法
 why_release: 当前版本 v1.1.0；以 Agent Skill 形式分发，需在支持 Skill 的客户端中安装，无独立安装包
@@ -22,7 +21,6 @@ tags: 演示文稿, Skill
 ## 评分依据
 
 - **开箱即用**：未通过。该项目为 Skill 形态，需装入 Claude Code、Cursor 等支持 Skill 的客户端。
-- **解决问题**：通过。
 - **维护活跃**：最近一次提交于 2026-10-30。
 - **文档充分**：README 给出安装命令、模板说明与校验脚本用法。
 - **版本规范**：当前版本 v1.1.0，以 Agent Skill 形式分发，需在支持 Skill 的客户端中安装，无独立安装包。

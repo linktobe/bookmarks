@@ -3,7 +3,7 @@
 """build —— entries/*.md → public/（收藏夹首页 + 详情页）。
 
 打分规则（写死在这里，改规则就改这个文件）：
-五条标准每条 1 分，满足几条就是几星。
+四条标准每条 1 分，满足几条就是几星。
 
   1 开箱可用    clone/下载后在 15 分钟内能看到效果
   2 解决真问题  有明确适用场景，不是玩具
@@ -35,12 +35,11 @@ PUBLIC = ROOT / "public"
 
 SITE_TITLE = "开源收藏夹"
 SITE_SUBTITLE = ("收录值得一试的开源项目。每个条目包含一句话概述、星级评定与标签。"
-                 "星级由五项标准逐条判定，满足几项即为几星，评定依据均可复查。")
+                 "星级由四项标准逐条判定，满足几项即为几星，评定依据均可复查。")
 
-# 五条标准，顺序即展示顺序
+# 四条标准，顺序即展示顺序
 CRITERIA = [
     ("runs", "开箱即用", "下载或克隆后 15 分钟内可观察到效果"),
-    ("real", "解决问题", "有明确要解决的问题，并有对应实现"),
     ("alive", "维护活跃", "近 6 个月内有提交或发布"),
     ("docs", "文档充分", "提供可直接照用的最小示例"),
     ("release", "版本规范", "有正式发布，且版本号遵循语义化版本"),
@@ -52,7 +51,7 @@ def esc(text: str) -> str:
 
 
 def stars_html(n: int) -> str:
-    return "".join("★" if i < n else "☆" for i in range(5))
+    return "".join("★" if i < n else "☆" for i in range(len(CRITERIA)))
 
 
 def fmt_count(n: int) -> str:
@@ -182,7 +181,7 @@ def build_index(entries: list[dict], now: str, css_ver: str) -> str:
         cards.append(f"""      <article class="card" style="--i:{idx}"
          data-tags="{esc(' '.join(e['tags']))}" data-search="{esc(searchable)}">
         <div class="top">
-          <span class="stars" title="{e['score']} / 5">{stars_html(e['score'])}</span>
+          <span class="stars" title="{e['score']} / {len(CRITERIA)}">{stars_html(e['score'])}</span>
           {gh}
         </div>
         <h2><a class="stretch" href="p/{e['slug']}.html">{esc(e['title'])}</a></h2>
@@ -209,12 +208,12 @@ def build_index(entries: list[dict], now: str, css_ver: str) -> str:
   <p class="lede">{esc(SITE_SUBTITLE)}</p>
   <div class="summary">
     <div><span class="k">收录</span><span class="v">{len(entries)}</span></div>
-    <div><span class="k">五星</span><span class="v">{sum(1 for e in entries if e['score'] == 5)}</span></div>
+    <div><span class="k">满星</span><span class="v">{sum(1 for e in entries if e['score'] == len(CRITERIA))}</span></div>
     <div><span class="k">标签</span><span class="v">{len(tags)}</span></div>
     <div><span class="k">更新</span><span class="v">{esc(now)}</span></div>
   </div>
   <details class="rubric" open>
-    <summary>评分标准（五项各计一分）</summary>
+    <summary>评分标准（四项各计一分）</summary>
     <ol>{"".join(f"<li><b>{esc(label)}</b>{esc(desc)}</li>" for _k, label, desc in CRITERIA)}</ol>
   </details>
 </header>
@@ -333,7 +332,7 @@ def build_detail(entry: dict, now: str, css_ver: str) -> str:
   <h1>{esc(entry['title'])}</h1>
   <p class="gh-row">{gh_button(entry)}</p>
   <p class="score"><span class="stars big">{stars_html(entry['score'])}</span>
-     <span class="score-n">{entry['score']} / 5</span></p>
+     <span class="score-n">{entry['score']} / {len(CRITERIA)}</span></p>
   <div class="meta">{"".join(meta)}</div>
   <div class="tags">{tags_html}</div>
 </header>
@@ -344,7 +343,7 @@ def build_detail(entry: dict, now: str, css_ver: str) -> str:
     <thead><tr><th>判定</th><th>标准</th><th>这个项目的情况</th></tr></thead>
     <tbody>{rows}</tbody>
   </table>
-  <p class="rubric-hint">表中各项均为该项目自身的判定说明；五项标准的通用定义见首页。</p>
+  <p class="rubric-hint">表中各项均为该项目自身的判定说明；四项标准的通用定义见首页。</p>
   <article class="md">{md.render(entry['body'])}</article>
 </main>
 <footer class="wrap">
@@ -383,7 +382,7 @@ def main() -> int:
     for entry in entries:
         (PUBLIC / "p" / f"{entry['slug']}.html").write_text(build_detail(entry, now, css_ver), encoding="utf-8")
 
-    dist = {i: sum(1 for e in entries if e["score"] == i) for i in range(1, 6)}
+    dist = {i: sum(1 for e in entries if e["score"] == i) for i in range(1, len(CRITERIA) + 1)}
     print("收录 %d 个 · 星级分布 %s" % (len(entries), dist))
     return 0
 

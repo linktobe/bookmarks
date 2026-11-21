@@ -6,9 +6,8 @@ language: Python
 gh_stars: 23458
 pushed: 2026-09-23
 added: 2026-11-21
-met: 解决问题, 维护活跃, 文档充分
+met: 维护活跃, 文档充分
 why_runs: 未通过：属 Skill 形态，需装入支持 Skill 的客户端
-why_real: 中文文本中空话、重复与模板化表达难以逐条清理，人工润色成本高
 why_alive: 最近一次提交于 2026-09-23
 why_docs: README 给出三种安装方式、验证步骤与更新记录
 why_release: 未通过：仓库无 release，仅提供 Skill 源文件，需手动或经命令行安装
@@ -24,7 +23,6 @@ tags: 文本润色, Skill
 ## 评分依据
 
 - **开箱即用**：未通过。该项目为 Skill 形态，需装入 Claude Code 等支持 Skill 的客户端。
-- **解决问题**：通过。
 - **维护活跃**：最近一次提交于 2026-09-23。
 - **文档充分**：README 给出三种安装方式、验证步骤与更新记录。
 - **版本规范**：未通过。仓库无 release，仅提供 Skill 源文件。

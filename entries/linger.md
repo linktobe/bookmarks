@@ -6,9 +6,8 @@ language: TypeScript
 gh_stars: 3059
 pushed: 2026-11-21
 added: 2026-11-21
-met: 解决问题, 维护活跃, 文档充分, 版本规范
+met: 维护活跃, 文档充分, 版本规范
 why_runs: 未通过：需安装桌面应用并下载本地模型，首次启动耗时较长
-why_real: 个人 AI 助手多依赖云端服务，数据与能力均不在本机
 why_alive: 最近一次提交于 2026-11-21
 why_docs: 提供独立文档站，覆盖桌面版、Docker Compose 与源码构建三种安装方式
 why_release: 当前版本 desktop-v0.1.6；提供桌面安装包（macOS 未签名、Windows 与 Linux 有安装步骤），另支持 Docker Compose 部署
@@ -22,7 +21,6 @@ tags: 本地模型, Agent, 桌面应用
 ## 评分依据
 
 - **开箱即用**：未通过。需安装桌面应用并下载本地模型，首次启动包含硬件检查与模型安装，耗时明显超过 15 分钟。
-- **解决问题**：通过。
 - **维护活跃**：最近一次提交于 2026-11-21。
 - **文档充分**：提供独立文档站，覆盖桌面版、Docker Compose 与源码构建三种安装方式。
 - **版本规范**：当前版本 desktop-v0.1.6，提供桌面安装包，Windows 与 Linux 有分平台说明；macOS 包尚未签名，首次启动需手动放行；另支持 Docker Compose 部署。

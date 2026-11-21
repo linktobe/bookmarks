@@ -6,9 +6,8 @@ language: HTML
 gh_stars: 8206
 pushed: 2026-10-30
 added: 2026-11-21
-met: 解决问题, 维护活跃, 文档充分
+met: 维护活跃, 文档充分
 why_runs: 未通过：属 Skill 形态，且渲染需 Node 与 Playwright
-why_real: 小红书图文与公众号封面需成套视觉，逐张制作耗时长且风格难统一
 why_alive: 最近一次提交于 2026-10-30
 why_docs: README 给出安装方式、模板与版式说明、渲染脚本用法
 why_release: 未通过：仓库无 release，仅提供 Skill 源文件与渲染脚本
@@ -22,7 +21,6 @@ tags: 设计, 图文, Skill
 ## 评分依据
 
 - **开箱即用**：未通过。该项目为 Skill 形态，需装入支持 Skill 的客户端；出图另需 Node 与 Playwright。
-- **解决问题**：通过。
 - **维护活跃**：最近一次提交于 2026-10-30。
 - **文档充分**：README 给出安装方式、模板与版式说明、渲染脚本用法。
 - **版本规范**：未通过。仓库无 release，仅提供 Skill 源文件与渲染脚本。

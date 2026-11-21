@@ -6,9 +6,8 @@ language: Python
 gh_stars: 12412
 pushed: 2026-11-21
 added: 2026-11-21
-met: 解决问题, 维护活跃, 文档充分, 版本规范
+met: 维护活跃, 文档充分, 版本规范
 why_runs: 未通过：需下载桌面版并配置模型服务或本地模型后方可出片
-why_real: 长视频转短视频的选题、切片、字幕与文案需人工逐段处理
 why_alive: 最近一次提交于 2026-11-21
 why_docs: 提供安装指南、常见问题与 CLI / MCP 说明
 why_release: 当前版本 v1.5.8；桌面版支持 macOS Apple Silicon 与 Windows x64，另有 Docker 与 CLI / MCP 两种接入方式
@@ -24,7 +23,6 @@ tags: 视频, 剪辑, 桌面应用
 ## 评分依据
 
 - **开箱即用**：未通过。需下载桌面版并在设置中配置模型服务（或先在本地启动 Ollama、LM Studio），完成配置后才可出片。
-- **解决问题**：通过。
 - **维护活跃**：最近一次提交于 2026-11-21。
 - **文档充分**：提供安装指南、常见问题与 CLI / MCP 说明。
 - **版本规范**：当前版本 v1.5.8；桌面版支持 macOS Apple Silicon 与 Windows x64，Linux 与自建服务可走 Docker，批量处理与接入 Agent 可用 CLI / MCP（需 Python 3.10+ 与 FFmpeg）。
