@@ -497,7 +497,7 @@ def build_web_index(sites: list[dict], now: str, css_ver: str) -> str:
         <p class="cn">{esc(s['one_liner'])}</p>
         <div class="bottom">
           <div class="tags">{tags_html}</div>
-          <span class="cta mono">{esc(facts)}</span>
+          <span class="cta mono wrap">{esc(facts)}</span>
         </div>
       </article>""")
 
