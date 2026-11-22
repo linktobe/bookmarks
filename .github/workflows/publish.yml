@@ -10,8 +10,8 @@ on:
       - "web/**"
       - "scripts/**"
   schedule:
-    # 每周一 04:17 UTC 复查一次链接，没改内容也会跑
-    - cron: "17 4 * * 1"
+    # 每天 04:17 UTC 复查一次；24 小时内查过则由脚本自动跳过
+    - cron: "17 4 * * *"
   workflow_dispatch:
 
 permissions:
@@ -32,7 +32,15 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: 检查仓库状态（失效 / 迁移 / 归档）
+      - name: 取回上次的链接检查结果
+        uses: actions/cache@v4
+        with:
+          path: data/link-status.json
+          key: link-status-${{ github.run_id }}
+          restore-keys: |
+            link-status-
+
+      - name: 检查仓库与网站状态（24 小时内查过则跳过）
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}   # 配额 60/h → 5000/h
         run: python scripts/check_links.py

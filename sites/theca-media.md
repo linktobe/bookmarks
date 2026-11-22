@@ -4,6 +4,7 @@ url: https://theca.media/
 lang: 英文（单语种）
 price: 未公开
 scope: 创意作品集与动效排版
+tags: 设计, 动效, 展示
 added: 2026-11-22
 one_liner: 面向创意工作者的实时动效工作室，把作品编排成视频或可交互的在线画廊。
 ---

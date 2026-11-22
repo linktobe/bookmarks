@@ -1,17 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""check_links —— 检查每个条目的仓库状态：还活着吗、改名了吗、归档了吗。
+"""check_links —— 检查每个条目的仓库状态，以及 sites/ 里网站的连通性。
 
-走 GitHub API（一次请求拿到全部信息），结果写到 data/link-status.json：
+仓库走 GitHub API，网站直接请求首页，结果写到 data/link-status.json：
 
   ok        正常
   archived  已归档：库还在、还能读，但作者已停止维护
   moved     改名或转移，API 会把 full_name 换成新地址
   missing   404 / 410，打不开
-  unknown   网络错误、限流，不下结论
+  unknown   网络错误、限流、需要登录，不下结论
 
-有 GITHUB_TOKEN 用 5000/h 配额，没有就走匿名 60/h——十几个仓库都够。
-任何单个仓库失败都不会让脚本非零退出：链接坏了应该被标出来，而不是让整站发不出去。
+默认 24 小时内不重复检查：上次结果还在文件里且未过期时直接跳过，加 --force 可强制重查。
+有 GITHUB_TOKEN 用 5000/h 配额，没有就走匿名 60/h——几十个仓库都够。
+任何单个条目失败都不会让脚本非零退出：链接坏了应该被标出来，而不是让整站发不出去。
 """
 from __future__ import annotations
 
@@ -31,8 +32,26 @@ OUT = ROOT / "data" / "link-status.json"
 
 HEADERS = _auth.headers()
 
+MAX_AGE_HOURS = 24
+
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36")
+
+
+def hours_since_last_check() -> float | None:
+    """上次检查距今多少小时；没查过或读不懂返回 None。"""
+    try:
+        payload = json.loads(OUT.read_text(encoding="utf-8"))
+    except (FileNotFoundError, json.JSONDecodeError):
+        return None
+    stamp = payload.get("checked_at_iso") or ""
+    try:
+        when = datetime.fromisoformat(stamp)
+    except ValueError:
+        return None
+    if when.tzinfo is None:
+        return None
+    return (datetime.now(timezone.utc) - when.astimezone(timezone.utc)).total_seconds() / 3600
 
 
 def field_of(path: Path, key: str) -> str:
@@ -107,6 +126,14 @@ def main() -> int:
             pass
 
     print(_auth.describe())
+
+    if "--force" not in sys.argv[1:]:
+        age = hours_since_last_check()
+        if age is not None and age < MAX_AGE_HOURS:
+            print(f"上次检查距今 {age:.1f} 小时，未满 {MAX_AGE_HOURS} 小时，本次跳过"
+                  f"（需要立刻重查可加 --force）。")
+            return 0
+
     repos = sorted({r for r in (repo_of(p) for p in ENTRIES.glob("*.md")) if r})
     if not repos:
         print("entries/ 里没有 repo 字段")
@@ -133,8 +160,10 @@ def main() -> int:
         print(f"  {result['status']:9s} {url}")
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
+    stamp = datetime.now(timezone.utc).astimezone()
     payload = {
-        "checked_at": datetime.now(timezone.utc).astimezone().strftime("%Y-%m-%d %H:%M"),
+        "checked_at": stamp.strftime("%Y-%m-%d %H:%M"),
+        "checked_at_iso": stamp.isoformat(timespec="seconds"),
         "items": items,
         "sites": site_items,
     }

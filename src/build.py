@@ -39,9 +39,9 @@ SITE_TITLE = "开源收藏夹"
 SITE_SUBTITLE = ("收录值得一试的开源项目。每个条目包含一句话概述、星级评定与标签。"
                  "星级由五项标准逐条判定，满足几项即为几星，评定依据均可复查。")
 
-WEB_TITLE = "非开源书签"
-WEB_SUBTITLE = ("收录值得一用的在线服务与商业产品。不评星级：每个条目只记网站语言、"
-                "是否免费与适用范围，正文只回答三个问题——是什么、解决什么问题、注意事项。")
+WEB_TITLE = "个人私藏"
+WEB_SUBTITLE = ("这里收的是不在开源之列、但值得留存的网站与服务。不评星级，"
+                "只记语言、费用与适用范围，正文只回答三个问题——是什么、解决什么问题、注意事项。")
 
 # 五条标准，顺序即展示顺序
 CRITERIA = [
@@ -154,13 +154,26 @@ def fmt_count(n: int) -> str:
     return str(n)
 
 
+SUN_SVG = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" '
+           'stroke-linecap="round" aria-hidden="true">'
+           '<circle cx="12" cy="12" r="4"/>'
+           '<path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4'
+           'M2 12h2M20 12h2M6.3 17.7l-1.4 1.4M19.1 4.9l-1.4 1.4"/></svg>')
+
+MOON_SVG = ('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" '
+            'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+            '<path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg>')
+
+
 def mode_switch(current: str, prefix: str = "") -> str:
-    """右上角的收藏类型切换：开源项目 ↔ 非开源网站。"""
+    """右上角的收藏类型开关：只给图标，不写文字。"""
     oss = ' aria-current="page"' if current == "oss" else ""
     web = ' aria-current="page"' if current == "web" else ""
     return ('<nav class="mode-switch" aria-label="收藏类型">'
-            f'<a href="{prefix}index.html"{oss}>开源项目</a>'
-            f'<a href="{prefix}web.html"{web}>非开源网站</a></nav>')
+            f'<a class="seg" href="{prefix}index.html"{oss} '
+            f'aria-label="{esc(SITE_TITLE)}" title="{esc(SITE_TITLE)}">{SUN_SVG}</a>'
+            f'<a class="seg" href="{prefix}web.html"{web} '
+            f'aria-label="{esc(WEB_TITLE)}" title="{esc(WEB_TITLE)}">{MOON_SVG}</a></nav>')
 
 
 def favicon_link(prefix: str = "") -> str:
@@ -239,6 +252,7 @@ def load_sites() -> list[dict]:
             "scope": meta.get("scope", ""),
             "added": meta.get("added", ""),
             "one_liner": meta.get("one_liner", ""),
+            "tags": [t.strip() for t in (meta.get("tags") or "").split(",") if t.strip()],
             "link": links.get(url, {}),
             "body": body,
         })
@@ -467,18 +481,23 @@ def site_warning(site: dict) -> str:
 
 
 def build_web_index(sites: list[dict], now: str, css_ver: str) -> str:
+    tags = sorted({t for s in sites for t in s["tags"]},
+                  key=lambda t: (-sum(1 for s in sites if t in s["tags"]), t))
+    chips = "".join(
+        f'<button class="chip" type="button" data-value="{esc(t)}">'
+        f'{esc(t)}<span class="n">{sum(1 for s in sites if t in s["tags"])}</span></button>'
+        for t in tags)
+
     cards: list[str] = []
     for idx, s in enumerate(sites):
-        bits = []
-        if s["lang"]:
-            bits.append(f'<span class="tag">{esc(s["lang"])}</span>')
-        if s["price"]:
-            bits.append(f'<span class="tag {price_class(s["price"])}">{esc(s["price"])}</span>')
-        if s["scope"]:
-            bits.append(f'<span class="tag">{esc(s["scope"])}</span>')
-        searchable = " ".join([s["title"], s["one_liner"], s["domain"],
-                               s["lang"], s["scope"]]).lower()
-        cards.append(f"""      <article class="card" style="--i:{idx}" data-search="{esc(searchable)}">
+        tags_html = "".join(
+            f'<button class="tag" type="button" data-tag="{esc(t)}">{esc(t)}</button>'
+            for t in s["tags"])
+        facts = " · ".join(x for x in (s["lang"], s["price"], s["scope"]) if x)
+        searchable = " ".join([s["title"], s["one_liner"], s["domain"], facts,
+                               " ".join(s["tags"])]).lower()
+        cards.append(f"""      <article class="card" style="--i:{idx}"
+         data-tags="{esc(' '.join(s['tags']))}" data-search="{esc(searchable)}">
         <div class="top">
           <span class="site-mark mono">网站</span>
           <a class="gh site mono" href="{esc(s['url'])}" target="_blank"
@@ -488,8 +507,8 @@ def build_web_index(sites: list[dict], now: str, css_ver: str) -> str:
         <p class="repo mono">{esc(s['domain'])}</p>
         <p class="cn">{esc(s['one_liner'])}</p>
         <div class="bottom">
-          <div class="tags">{''.join(bits)}</div>
-          <span class="cta mono">收录于 {esc(s['added'])}</span>
+          <div class="tags">{tags_html}</div>
+          <span class="cta mono">{esc(facts)}</span>
         </div>
       </article>""")
 
@@ -501,11 +520,12 @@ def build_web_index(sites: list[dict], now: str, css_ver: str) -> str:
 <title>{esc(WEB_TITLE)}</title>
 <link rel="stylesheet" href="assets/style.css?v={css_ver}">
 {favicon_link()}
+<noscript><style>.chips{{max-height:none}}</style></noscript>
 </head>
 <body class="web">
 <header class="wrap">
   <div class="topline">
-    <p class="eyebrow">Bookmarks · Web</p>
+    <p class="eyebrow">Bookmarks · Private</p>
     {mode_switch('web')}
   </div>
   <h1>{esc(WEB_TITLE)}</h1>
@@ -518,7 +538,17 @@ def build_web_index(sites: list[dict], now: str, css_ver: str) -> str:
 
 <div class="toolbar">
   <div class="wrap">
-    <input id="q" type="search" placeholder="搜索网站、用途或适用范围（共 {len(sites)} 个）" autocomplete="off">
+    <input id="q" type="search" placeholder="搜索网站、用途或标签（共 {len(sites)} 个）" autocomplete="off">
+    <div class="tagbar">
+      <div class="chips" id="tags">{chips}</div>
+      <button class="chips-toggle" id="tagsToggle" type="button"
+              aria-expanded="false" aria-controls="tags" hidden>
+        <span class="tx">展开全部</span>
+        <svg class="arw" width="9" height="9" viewBox="0 0 10 10" aria-hidden="true">
+          <path d="M2 4l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.3"/>
+        </svg>
+      </button>
+    </div>
   </div>
 </div>
 
@@ -530,7 +560,7 @@ def build_web_index(sites: list[dict], now: str, css_ver: str) -> str:
 </main>
 
 <footer class="wrap">
-  <p>这些条目不是开源项目，因此不参与星级评定；语言、费用与适用范围均按官网信息记录，可能随时间变动。</p>
+  <p>私藏不做星级评定；语言、费用与适用范围按官网信息记录，可能随时间变动。</p>
   <p class="mono">生成于 {esc(now)}</p>
 </footer>
 {LIST_JS}
@@ -540,15 +570,18 @@ def build_web_index(sites: list[dict], now: str, css_ver: str) -> str:
 
 
 def build_site_detail(site: dict, now: str, css_ver: str) -> str:
-    meta = [f'<a href="{esc(site["url"])}" target="_blank" rel="noopener noreferrer">'
-            f'{esc(site["domain"])}</a>']
+    rows = [("网址", f'<a href="{esc(site["url"])}" target="_blank" '
+                     f'rel="noopener noreferrer">{esc(site["domain"])}</a>')]
     if site["lang"]:
-        meta.append(f'<span>语言：{esc(site["lang"])}</span>')
+        rows.append(("语言", esc(site["lang"])))
     if site["price"]:
-        meta.append(f'<span>费用：{esc(site["price"])}</span>')
+        rows.append(("费用", f'<span class="{price_class(site["price"])}">'
+                            f'{esc(site["price"])}</span>'))
     if site["scope"]:
-        meta.append(f'<span>适用范围：{esc(site["scope"])}</span>')
-    meta.append(f'<span class="mono">收录于 {esc(site["added"])}</span>')
+        rows.append(("适用范围", esc(site["scope"])))
+    if site["added"]:
+        rows.append(("收录", f'<span class="mono">{esc(site["added"])}</span>'))
+    meta = "".join(f'<div class="mrow"><dt>{k}</dt><dd>{v}</dd></div>' for k, v in rows)
 
     return f"""<!doctype html>
 <html lang="zh-CN">
@@ -568,7 +601,7 @@ def build_site_detail(site: dict, now: str, css_ver: str) -> str:
   <h1>{esc(site['title'])}</h1>
   <p class="gh-row"><a class="gh-btn" href="{esc(site['url'])}" target="_blank"
      rel="noopener noreferrer">打开网站 ↗</a></p>
-  <div class="meta">{''.join(meta)}</div>
+  <dl class="meta-v">{meta}</dl>
 </header>
 <main class="wrap">
   {site_warning(site)}
