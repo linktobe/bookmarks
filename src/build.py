@@ -201,6 +201,7 @@ def build_index(entries: list[dict], now: str, css_ver: str) -> str:
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{esc(SITE_TITLE)}</title>
 <link rel="stylesheet" href="assets/style.css?v={css_ver}">
+<noscript><style>.chips{{max-height:none}}</style></noscript>
 </head>
 <body>
 <header class="wrap">
@@ -222,7 +223,16 @@ def build_index(entries: list[dict], now: str, css_ver: str) -> str:
 <div class="toolbar">
   <div class="wrap">
     <input id="q" type="search" placeholder="搜索项目、用途或标签（共 {len(entries)} 条）" autocomplete="off">
-    <div class="chips" id="tags">{chips}</div>
+    <div class="tagbar">
+      <div class="chips" id="tags">{chips}</div>
+      <button class="chips-toggle" id="tagsToggle" type="button"
+              aria-expanded="false" aria-controls="tags" hidden>
+        <span class="tx">展开全部</span>
+        <svg class="arw" width="9" height="9" viewBox="0 0 10 10" aria-hidden="true">
+          <path d="M2 4l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.3"/>
+        </svg>
+      </button>
+    </div>
   </div>
 </div>
 
@@ -287,6 +297,35 @@ def build_index(entries: list[dict], now: str, css_ver: str) -> str:
   if (wanted) {{ setTag(wanted); }}
 
   q.addEventListener('input', function () {{ apply(false); }});
+
+  var chips = document.getElementById('tags');
+  var toggle = document.getElementById('tagsToggle');
+  var toggleTx = toggle.querySelector('.tx');
+  if (wanted) chips.classList.add('open');
+  function tagRowHeight() {{
+    var first = chips.firstElementChild;
+    return first ? Math.round(first.getBoundingClientRect().height) : 0;
+  }}
+  function syncTags() {{
+    var open = chips.classList.contains('open');
+    var h = tagRowHeight();
+    if (h) chips.style.setProperty('--row', h + 'px');
+    if (open) {{
+      toggle.hidden = false;
+    }} else {{
+      toggle.hidden = !(chips.scrollHeight > chips.clientHeight + 1);
+    }}
+    toggle.setAttribute('aria-expanded', String(open));
+    toggleTx.textContent = open ? '收起' : '展开全部';
+  }}
+  toggle.addEventListener('click', function () {{
+    chips.classList.toggle('open');
+    syncTags();
+  }});
+  syncTags();
+  window.addEventListener('resize', syncTags);
+  window.addEventListener('load', syncTags);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(syncTags);
 
   var bar = document.querySelector('.toolbar');
   function onScroll() {{ document.body.classList.toggle('scrolled', window.scrollY > 6); }}

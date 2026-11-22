@@ -40,11 +40,23 @@ h1{font-family:var(--serif);font-size:clamp(34px,4.6vw,46px);line-height:1.08;
 .toolbar{position:sticky;top:0;z-index:10;background:rgba(251,250,247,.95);
          backdrop-filter:saturate(1.4) blur(8px);border-bottom:1px solid var(--line);
          padding:16px 0 14px}
-#q{width:100%;max-width:360px;border:1px solid var(--line);background:var(--card);
-   color:var(--ink);padding:10px 13px;border-radius:2px;font-size:14px;font-family:var(--sans)}
+#q{width:100%;max-width:460px;border:1px solid var(--line);background:var(--card);
+   color:var(--ink);padding:13px 16px;border-radius:2px;font-size:15px;font-family:var(--sans)}
 #q::placeholder{color:var(--faint)}
 #q:focus{outline:none;border-color:#c7c0b2}
-.chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.tagbar{display:flex;align-items:flex-start;gap:14px;margin-top:10px}
+.chips{flex:1 1 auto;min-width:0;display:flex;gap:7px;flex-wrap:wrap;
+       max-height:var(--row,27px);overflow:hidden;
+       transition:max-height .22s ease}
+.chips.open{max-height:none}
+@media (prefers-reduced-motion: reduce){.chips{transition:none}}
+.chips-toggle{flex:none;display:inline-flex;align-items:center;gap:6px;
+              font:12.5px/1 var(--sans);color:var(--muted);background:none;border:0;
+              padding:7px 0 0;cursor:pointer;white-space:nowrap}
+.chips-toggle:hover{color:var(--ink)}
+.chips-toggle[hidden]{display:none}
+.chips-toggle .arw{transition:transform .2s ease;opacity:.75}
+.chips-toggle[aria-expanded="true"] .arw{transform:rotate(180deg)}
 .chip{font:12.5px/1 var(--sans);border:1px solid var(--line);background:var(--card);
       color:var(--muted);padding:6px 11px;border-radius:999px;cursor:pointer;
       display:inline-flex;align-items:center;gap:6px}
@@ -283,7 +295,8 @@ body.scrolled .toolbar{background:rgba(251,250,247,.99)}
   .rubric ol{line-height:1.9}
   .toolbar{padding:12px 0 10px}
   #q{max-width:100%}
-  .chips{gap:6px;margin-top:8px}
+  .chips{gap:6px}
+  .tagbar{gap:10px;margin-top:8px}
   .chip{font-size:12px;padding:5px 9px}
   .grid{gap:10px;padding:18px 0 6px}
   .card{padding:15px 16px 13px}
