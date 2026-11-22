@@ -277,20 +277,6 @@ def gh_link_html(entry: dict) -> str:
             f'rel="noopener noreferrer">GitHub ↗</a>')
 
 
-def gh_button(entry: dict) -> str:
-    """详情页顶部的仓库按钮：失效就别给可点的样子，迁移了就指向新地址。"""
-    link = entry.get("link") or {}
-    status = link.get("status", "")
-    if status == "missing":
-        return '<span class="gh-btn dead">仓库已不可访问</span>'
-    if status == "moved":
-        new = esc(link.get("new_repo") or entry["repo"])
-        return (f'<a class="gh-btn" href="https://github.com/{new}" target="_blank" '
-                f'rel="noopener noreferrer">在 GitHub 打开 ↗（已迁移）</a>')
-    return (f'<a class="gh-btn" href="https://github.com/{esc(entry["repo"])}" target="_blank" '
-            f'rel="noopener noreferrer">在 GitHub 打开 ↗</a>')
-
-
 def link_warning(entry: dict) -> str:
     """详情页顶部的链接状态提示。"""
     link = entry.get("link") or {}
@@ -419,7 +405,11 @@ def build_detail(entry: dict, now: str, css_ver: str) -> str:
     tags_html = "".join(
         f'<a class="tag" href="../index.html?tag={quote(esc(t))}">{esc(t)}</a>'
         for t in entry["tags"])
-    meta = [f'<a href="https://github.com/{esc(entry["repo"])}" target="_blank" '
+    repo_href = f"https://github.com/{esc(entry['repo'])}"
+    link = entry.get("link") or {}
+    if link.get("status") == "moved" and link.get("new_repo"):
+        repo_href = f"https://github.com/{esc(link['new_repo'])}"
+    meta = [f'<a href="{repo_href}" target="_blank" '
             f'rel="noopener noreferrer">{esc(entry["repo"])}</a>']
     if entry["language"]:
         meta.append(f'<span>{esc(entry["language"])}</span>')
@@ -445,7 +435,6 @@ def build_detail(entry: dict, now: str, css_ver: str) -> str:
     {mode_switch('oss', '../')}
   </div>
   <h1>{esc(entry['title'])}</h1>
-  <p class="gh-row">{gh_button(entry)}</p>
   <p class="score"><span class="stars big">{stars_html(entry['score'])}</span>
      <span class="score-n">{entry['score']} / {len(CRITERIA)}</span></p>
   <div class="meta">{"".join(meta)}</div>
@@ -599,8 +588,6 @@ def build_site_detail(site: dict, now: str, css_ver: str) -> str:
     {mode_switch('web', '../')}
   </div>
   <h1>{esc(site['title'])}</h1>
-  <p class="gh-row"><a class="gh-btn" href="{esc(site['url'])}" target="_blank"
-     rel="noopener noreferrer">打开网站 ↗</a></p>
   <dl class="meta-v">{meta}</dl>
 </header>
 <main class="wrap">

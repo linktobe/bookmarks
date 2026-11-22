@@ -267,11 +267,6 @@ footer .mono{color:var(--faint)}
 .card:hover .gh{color:var(--muted)}
 .card .cta{white-space:nowrap}
 
-.gh-row{margin:0 0 16px}
-.gh-btn{display:inline-block;font-size:13px;color:var(--accent)}
-.gh-btn:hover{color:var(--ink);text-decoration:none}
-.gh-btn.dead{color:var(--faint)}
-
 .card .repo{margin:3px 0 9px;font-size:11px;color:var(--faint);
             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
@@ -287,8 +282,6 @@ a.tag:hover{text-decoration:none;border-color:var(--line-hover);color:var(--ink)
 .banner.bad{border-left-color:var(--bad)}
 .banner b{color:var(--ink)}
 .banner a{color:var(--accent)}
-.gh-btn.dead{cursor:default}
-.gh-btn.dead:hover{color:var(--faint)}
 .card .gh.archived{color:var(--archived)}
 .banner.muted{border-left-color:var(--muted-line)}
 
@@ -316,7 +309,7 @@ a.tag:hover{text-decoration:none;border-color:var(--line-hover);color:var(--ink)
   header h1{animation:riseIn .55s cubic-bezier(.2,.7,.3,1) both;animation-delay:.05s}
   header .lede{animation:riseIn .55s cubic-bezier(.2,.7,.3,1) both;animation-delay:.12s}
   header .summary,header .rubric{animation:riseIn .55s cubic-bezier(.2,.7,.3,1) both;animation-delay:.19s}
-  header .gh-row,header .score,header .meta{animation:riseIn .5s cubic-bezier(.2,.7,.3,1) both;animation-delay:.05s}
+  header .score,header .meta{animation:riseIn .5s cubic-bezier(.2,.7,.3,1) both;animation-delay:.05s}
 
   /* 卡片：逐张升起 */
   .card{animation:riseIn .5s cubic-bezier(.2,.7,.3,1) backwards;
@@ -347,7 +340,6 @@ button.tag:active,a.tag:active{transform:scale(.97)}
 button.tag,a.tag{transition:background-color .15s ease,border-color .15s ease,color .15s ease,transform .12s ease}
 
 /* 外链按钮 */
-.gh-btn{transition:color .15s ease}
 
 /* 顶栏滚动后加强分隔 */
 .toolbar{transition:background-color .25s ease}
