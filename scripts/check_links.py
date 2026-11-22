@@ -26,16 +26,42 @@ import _auth
 
 ROOT = Path(__file__).resolve().parent.parent
 ENTRIES = ROOT / "entries"
+SITES = ROOT / "sites"
 OUT = ROOT / "data" / "link-status.json"
 
 HEADERS = _auth.headers()
 
+UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+      "(KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36")
 
-def repo_of(path: Path) -> str:
+
+def field_of(path: Path, key: str) -> str:
     for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
-        if line.startswith("repo:"):
+        if line.startswith(f"{key}:"):
             return line.split(":", 1)[1].strip()
     return ""
+
+
+def repo_of(path: Path) -> str:
+    return field_of(path, "repo")
+
+
+def check_site(url: str) -> dict:
+    """直接访问网站首页：能打开就行，不判断内容。"""
+    if not url:
+        return {"status": "unknown", "code": 0, "error": "缺少 url"}
+    req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "text/html,*/*"})
+    try:
+        with urllib.request.urlopen(req, timeout=25) as resp:
+            return {"status": "ok", "code": resp.status}
+    except urllib.error.HTTPError as exc:
+        if exc.code in (404, 410):
+            return {"status": "missing", "code": exc.code}
+        if exc.code in (401, 403, 429):
+            return {"status": "unknown", "code": exc.code, "error": "需要登录或被限流"}
+        return {"status": "unknown", "code": exc.code}
+    except Exception as exc:
+        return {"status": "unknown", "code": 0, "error": f"{type(exc).__name__}: {exc}"}
 
 
 def check(repo: str) -> dict:
@@ -97,18 +123,32 @@ def main() -> int:
             extra = f"（最后提交 {result.get('pushed', '?')}）"
         print(f"  {result['status']:9s} {repo}{extra}")
 
+    site_items: dict[str, dict] = {}
+    for path in sorted(SITES.glob("*.md")):
+        url = field_of(path, "url")
+        if not url:
+            continue
+        result = check_site(url)
+        site_items[url] = result
+        print(f"  {result['status']:9s} {url}")
+
     OUT.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "checked_at": datetime.now(timezone.utc).astimezone().strftime("%Y-%m-%d %H:%M"),
         "items": items,
+        "sites": site_items,
     }
     OUT.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     broken = [r for r, v in items.items() if v["status"] in ("missing", "moved")]
     archived = [r for r, v in items.items() if v["status"] == "archived"]
-    print(f"\n检查 {len(repos)} 个 · 失效/迁移 {len(broken)} · 已归档 {len(archived)}")
+    dead_sites = [u for u, v in site_items.items() if v["status"] == "missing"]
+    print(f"\n仓库 {len(repos)} 个 · 失效/迁移 {len(broken)} · 已归档 {len(archived)}"
+          f" · 网站 {len(site_items)} 个 · 打不开 {len(dead_sites)}")
     if archived:
         print("  归档：" + ", ".join(archived))
+    if dead_sites:
+        print("  网站打不开：" + ", ".join(dead_sites))
     return 0
 
 

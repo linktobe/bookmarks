@@ -2,6 +2,8 @@
 
 将值得一试的开源项目收录于同一页面：每个条目包含一句话概述、星级评定与标签。
 
+站内另设「非开源书签」一栏，收录值得一用的在线服务与商业产品，不评星级。右上角可一键在两栏之间切换，非开源栏整体采用深色配色。
+
 ![列表](preview.png)
 
 > 图为版式示意，截取自首屏，不随条目增减而更新。
@@ -33,11 +35,13 @@
 
 ```
 gh-collection/
-├─ entries/            每个项目对应一个 .md 文件
-├─ src/build.py        entries → public/，含评分规则
+├─ entries/            开源项目，每个项目对应一个 .md
+├─ sites/              非开源网站，每个网站对应一个 .md
+├─ src/build.py        生成 public/，含评分规则
 ├─ src/md.py           极简 Markdown 渲染
 ├─ scripts/            辅助脚本（仓库信息、链接检查）
 ├─ web/style.css       全站样式
+├─ web/favicon.svg     标签页图标
 └─ public/             生成结果，Pages 托管此目录
 ```
 
@@ -84,6 +88,38 @@ tags: 工具链, 自动化
 python scripts/repo_info.py owner/repo
 ```
 
+## 非开源书签的收录格式
+
+`sites/` 下的条目不做星级评定，也不逐项回答评分问题。它只记三个事实字段，正文只回答三个问题。
+
+| 字段 | 内容 |
+|---|---|
+| `lang` | 网站语言；多语言需逐项写出 |
+| `price` | 是否免费：免费 / 部分免费 / 付费 / 未公开 |
+| `scope` | 适用范围，一句话 |
+
+```markdown
+---
+title: 网站名
+url: https://example.com/
+lang: 英文（单语种）
+price: 未公开
+scope: 创意作品集与动效排版
+added: 2026-11-22
+one_liner: 一句话说明它是什么。
+---
+
+## 是什么
+
+## 解决的问题
+
+## 注意事项
+```
+
+正文三节固定为「是什么、解决的问题、注意事项」。费用、内测或账号门槛、语言限制与版权条款，均写入「注意事项」；不另设评分表，也不列优缺点清单。
+
+非开源栏整体使用深色配色，与开源栏共用同一套版式与组件，仅更换色板（`web/style.css` 中的 `body.web`）。
+
 ## 链接状态检查
 
 收藏条目最常见的失效原因是仓库变更。为此设有自动检查：
@@ -103,6 +139,8 @@ python scripts/check_links.py
 | unknown | 网络错误或限流 | 不作判定，照常显示 |
 
 结果写入 `data/link-status.json`（不纳入版本库）。工作流在每次构建前执行该检查，并设有每周一次的定时复查，即使条目未变更亦可发现失效链接。
+
+`sites/` 下的网站同样会逐个访问首页：返回 404 / 410 记为失效，需登录或限流记为不作判定。网站不判断内容变更，只看能否打开。
 
 单个仓库检查失败不会阻断发布：链接失效应被标注，而非导致整站无法发布。
 
@@ -131,4 +169,8 @@ python src/build.py
 
 ## 部署
 
-推送至 GitHub 后，于 **Settings → Pages → Source** 选择 **GitHub Actions**。此后每次修改 `entries/` 均会触发自动重建与发布。
+推送至 GitHub 后，于 **Settings → Pages → Source** 选择 **GitHub Actions**。此后修改 `entries/` 或 `sites/` 均会触发自动重建与发布。
+
+## 图标来源
+
+标签页图标为 32×32 的 SVG，书签图形取自 [Lucide](https://lucide.dev) 的 `bookmark` 图标（ISC 许可），按本站配色重绘为实心版本。位于 `web/favicon.svg`，构建时复制到 `public/assets/`。

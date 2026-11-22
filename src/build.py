@@ -19,6 +19,7 @@ from __future__ import annotations
 import hashlib
 import html
 import json
+import re
 import shutil
 import sys
 from datetime import datetime
@@ -31,11 +32,16 @@ import md  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 ENTRIES = ROOT / "entries"
+SITES = ROOT / "sites"
 PUBLIC = ROOT / "public"
 
 SITE_TITLE = "开源收藏夹"
 SITE_SUBTITLE = ("收录值得一试的开源项目。每个条目包含一句话概述、星级评定与标签。"
                  "星级由五项标准逐条判定，满足几项即为几星，评定依据均可复查。")
+
+WEB_TITLE = "非开源书签"
+WEB_SUBTITLE = ("收录值得一用的在线服务与商业产品。不评星级：每个条目只记网站语言、"
+                "是否免费与适用范围，正文只回答三个问题——是什么、解决什么问题、注意事项。")
 
 # 五条标准，顺序即展示顺序
 CRITERIA = [
@@ -45,6 +51,91 @@ CRITERIA = [
     ("release", "版本规范", "有正式发布，且版本号遵循语义化版本"),
     ("demo", "有示例", "仓库内提供可直接查看或运行的示例"),
 ]
+
+
+LIST_JS = """<script>
+(function () {
+  var q = document.getElementById('q');
+  var cards = [].slice.call(document.querySelectorAll('.card'));
+  var empty = document.getElementById('empty');
+  var active = 'all';
+  function apply(animate) {
+    var text = q.value.trim().toLowerCase(), shown = 0;
+    cards.forEach(function (c) {
+      var ok = (!text || c.dataset.search.indexOf(text) !== -1)
+        && (active === 'all' || (c.dataset.tags || '').split(' ').indexOf(active) !== -1);
+      if (ok && c.hidden) {
+        c.hidden = false;
+        if (animate) { c.classList.remove('pop'); void c.offsetWidth; c.classList.add('pop'); }
+      } else if (!ok) {
+        c.hidden = true;
+      }
+      if (ok) shown++;
+    });
+    empty.hidden = shown !== 0;
+  }
+  function setTag(value) {
+    active = (value === active) ? 'all' : value;
+    document.querySelectorAll('.chip').forEach(function (c) {
+      c.setAttribute('aria-pressed', String(c.dataset.value === active));
+    });
+    apply(true);
+  }
+  document.querySelectorAll('.chip').forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      var on = chip.getAttribute('aria-pressed') === 'true';
+      document.querySelectorAll('.chip').forEach(function (c) { c.setAttribute('aria-pressed', 'false'); });
+      if (on) { active = 'all'; } else { chip.setAttribute('aria-pressed', 'true'); active = chip.dataset.value; }
+      apply(true);
+    });
+  });
+  document.querySelectorAll('.tag[data-tag]').forEach(function (tag) {
+    tag.addEventListener('click', function (ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      setTag(tag.getAttribute('data-tag'));
+    });
+  });
+  var wanted = new URLSearchParams(location.search).get('tag');
+  if (wanted) { setTag(wanted); }
+  q.addEventListener('input', function () { apply(false); });
+
+  var chips = document.getElementById('tags');
+  var toggle = document.getElementById('tagsToggle');
+  if (chips && toggle) {
+    var toggleTx = toggle.querySelector('.tx');
+    if (wanted) chips.classList.add('open');
+    var tagRowHeight = function () {
+      var first = chips.firstElementChild;
+      return first ? Math.round(first.getBoundingClientRect().height) : 0;
+    };
+    var syncTags = function () {
+      var open = chips.classList.contains('open');
+      var h = tagRowHeight();
+      if (h) chips.style.setProperty('--row', h + 'px');
+      if (open) {
+        toggle.hidden = false;
+      } else {
+        toggle.hidden = !(chips.scrollHeight > chips.clientHeight + 1);
+      }
+      toggle.setAttribute('aria-expanded', String(open));
+      toggleTx.textContent = open ? '收起' : '展开全部';
+    };
+    toggle.addEventListener('click', function () {
+      chips.classList.toggle('open');
+      syncTags();
+    });
+    syncTags();
+    window.addEventListener('resize', syncTags);
+    window.addEventListener('load', syncTags);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(syncTags);
+  }
+
+  function onScroll() { document.body.classList.toggle('scrolled', window.scrollY > 6); }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+})();
+</script>"""
 
 
 def esc(text: str) -> str:
@@ -61,6 +152,28 @@ def fmt_count(n: int) -> str:
     if n >= 1000:
         return f"{n / 1000:.1f}k"
     return str(n)
+
+
+def mode_switch(current: str, prefix: str = "") -> str:
+    """右上角的收藏类型切换：开源项目 ↔ 非开源网站。"""
+    oss = ' aria-current="page"' if current == "oss" else ""
+    web = ' aria-current="page"' if current == "web" else ""
+    return ('<nav class="mode-switch" aria-label="收藏类型">'
+            f'<a href="{prefix}index.html"{oss}>开源项目</a>'
+            f'<a href="{prefix}web.html"{web}>非开源网站</a></nav>')
+
+
+def favicon_link(prefix: str = "") -> str:
+    return f'<link rel="icon" href="{prefix}assets/favicon.svg" type="image/svg+xml">'
+
+
+def price_class(price: str) -> str:
+    text = price or ""
+    if "免费" in text and "付费" not in text:
+        return "is-free"
+    if any(word in text for word in ("付费", "订阅", "收费")):
+        return "is-paid"
+    return "is-unknown"
 
 
 def load_link_status() -> dict:
@@ -106,6 +219,30 @@ def load_entries() -> list[dict]:
             "body": body,
         })
     items.sort(key=lambda e: (-e["score"], e["title"].lower()))
+    return items
+
+
+def load_sites() -> list[dict]:
+    links = load_link_status().get("sites", {})
+    items: list[dict] = []
+    for path in sorted(SITES.glob("*.md")):
+        meta, body = md.split_frontmatter(path.read_text(encoding="utf-8", errors="replace"))
+        url = (meta.get("url") or "").strip()
+        domain = re.sub(r"^https?://(?:www\.)?", "", url).rstrip("/")
+        items.append({
+            "slug": path.stem,
+            "title": meta.get("title") or path.stem,
+            "url": url,
+            "domain": domain,
+            "lang": meta.get("lang", ""),
+            "price": meta.get("price", ""),
+            "scope": meta.get("scope", ""),
+            "added": meta.get("added", ""),
+            "one_liner": meta.get("one_liner", ""),
+            "link": links.get(url, {}),
+            "body": body,
+        })
+    items.sort(key=lambda s: (s["added"], s["title"].lower()), reverse=True)
     return items
 
 
@@ -201,11 +338,15 @@ def build_index(entries: list[dict], now: str, css_ver: str) -> str:
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{esc(SITE_TITLE)}</title>
 <link rel="stylesheet" href="assets/style.css?v={css_ver}">
+{favicon_link()}
 <noscript><style>.chips{{max-height:none}}</style></noscript>
 </head>
 <body>
 <header class="wrap">
-  <p class="eyebrow">Bookmarks · GitHub</p>
+  <div class="topline">
+    <p class="eyebrow">Bookmarks · GitHub</p>
+    {mode_switch('oss')}
+  </div>
   <h1>{esc(SITE_TITLE)}</h1>
   <p class="lede">{esc(SITE_SUBTITLE)}</p>
   <div class="summary">
@@ -248,91 +389,7 @@ def build_index(entries: list[dict], now: str, css_ver: str) -> str:
   <p class="mono">生成于 {esc(now)}</p>
 </footer>
 
-<script>
-(function () {{
-  var q = document.getElementById('q');
-  var cards = [].slice.call(document.querySelectorAll('.card'));
-  var empty = document.getElementById('empty');
-  var active = 'all';
-  function apply(animate) {{
-    var text = q.value.trim().toLowerCase(), shown = 0;
-    cards.forEach(function (c) {{
-      var ok = (!text || c.dataset.search.indexOf(text) !== -1)
-        && (active === 'all' || c.dataset.tags.split(' ').indexOf(active) !== -1);
-      if (ok && c.hidden) {{
-        c.hidden = false;
-        if (animate) {{ c.classList.remove('pop'); void c.offsetWidth; c.classList.add('pop'); }}
-      }} else if (!ok) {{
-        c.hidden = true;
-      }}
-      if (ok) shown++;
-    }});
-    empty.hidden = shown !== 0;
-  }}
-  document.querySelectorAll('.chip').forEach(function (chip) {{
-    chip.addEventListener('click', function () {{
-      var on = chip.getAttribute('aria-pressed') === 'true';
-      document.querySelectorAll('.chip').forEach(function (c) {{ c.setAttribute('aria-pressed', 'false'); }});
-      if (on) {{ active = 'all'; }} else {{ chip.setAttribute('aria-pressed', 'true'); active = chip.dataset.value; }}
-      apply(true);
-    }});
-  }});
-  function setTag(value) {{
-    active = (value === active) ? 'all' : value;
-    document.querySelectorAll('.chip').forEach(function (c) {{
-      c.setAttribute('aria-pressed', String(c.dataset.value === active));
-    }});
-    apply(true);
-  }}
-
-  document.querySelectorAll('.tag').forEach(function (tag) {{
-    tag.addEventListener('click', function (ev) {{
-      ev.preventDefault();
-      ev.stopPropagation();
-      setTag(tag.dataset.tag);
-    }});
-  }});
-
-  var wanted = new URLSearchParams(location.search).get('tag');
-  if (wanted) {{ setTag(wanted); }}
-
-  q.addEventListener('input', function () {{ apply(false); }});
-
-  var chips = document.getElementById('tags');
-  var toggle = document.getElementById('tagsToggle');
-  var toggleTx = toggle.querySelector('.tx');
-  if (wanted) chips.classList.add('open');
-  function tagRowHeight() {{
-    var first = chips.firstElementChild;
-    return first ? Math.round(first.getBoundingClientRect().height) : 0;
-  }}
-  function syncTags() {{
-    var open = chips.classList.contains('open');
-    var h = tagRowHeight();
-    if (h) chips.style.setProperty('--row', h + 'px');
-    if (open) {{
-      toggle.hidden = false;
-    }} else {{
-      toggle.hidden = !(chips.scrollHeight > chips.clientHeight + 1);
-    }}
-    toggle.setAttribute('aria-expanded', String(open));
-    toggleTx.textContent = open ? '收起' : '展开全部';
-  }}
-  toggle.addEventListener('click', function () {{
-    chips.classList.toggle('open');
-    syncTags();
-  }});
-  syncTags();
-  window.addEventListener('resize', syncTags);
-  window.addEventListener('load', syncTags);
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(syncTags);
-
-  var bar = document.querySelector('.toolbar');
-  function onScroll() {{ document.body.classList.toggle('scrolled', window.scrollY > 6); }}
-  window.addEventListener('scroll', onScroll, {{ passive: true }});
-  onScroll();
-}})();
-</script>
+{LIST_JS}
 </body>
 </html>
 """
@@ -365,10 +422,14 @@ def build_detail(entry: dict, now: str, css_ver: str) -> str:
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{esc(entry['title'])} · {esc(SITE_TITLE)}</title>
 <link rel="stylesheet" href="../assets/style.css?v={css_ver}">
+{favicon_link('../')}
 </head>
 <body>
 <header class="wrap detail-head">
-  <a class="back" href="../index.html">← 返回列表</a>
+  <div class="topline">
+    <a class="back" href="../index.html">← 返回列表</a>
+    {mode_switch('oss', '../')}
+  </div>
   <h1>{esc(entry['title'])}</h1>
   <p class="gh-row">{gh_button(entry)}</p>
   <p class="score"><span class="stars big">{stars_html(entry['score'])}</span>
@@ -394,6 +455,134 @@ def build_detail(entry: dict, now: str, css_ver: str) -> str:
 """
 
 
+def site_warning(site: dict) -> str:
+    """网站打不开时的提示。"""
+    link = site.get("link") or {}
+    if link.get("status") == "missing":
+        code = link.get("code", 404)
+        return ('<div class="banner bad"><b>网站已无法访问。</b>'
+                f'访问 {esc(site["url"])} 返回 {code}，可能已下线或限制访问；'
+                '本条仅代表收录当时的判断。</div>')
+    return ""
+
+
+def build_web_index(sites: list[dict], now: str, css_ver: str) -> str:
+    cards: list[str] = []
+    for idx, s in enumerate(sites):
+        bits = []
+        if s["lang"]:
+            bits.append(f'<span class="tag">{esc(s["lang"])}</span>')
+        if s["price"]:
+            bits.append(f'<span class="tag {price_class(s["price"])}">{esc(s["price"])}</span>')
+        if s["scope"]:
+            bits.append(f'<span class="tag">{esc(s["scope"])}</span>')
+        searchable = " ".join([s["title"], s["one_liner"], s["domain"],
+                               s["lang"], s["scope"]]).lower()
+        cards.append(f"""      <article class="card" style="--i:{idx}" data-search="{esc(searchable)}">
+        <div class="top">
+          <span class="site-mark mono">网站</span>
+          <a class="gh site mono" href="{esc(s['url'])}" target="_blank"
+             rel="noopener noreferrer">访问 ↗</a>
+        </div>
+        <h2><a class="stretch" href="w/{s['slug']}.html">{esc(s['title'])}</a></h2>
+        <p class="repo mono">{esc(s['domain'])}</p>
+        <p class="cn">{esc(s['one_liner'])}</p>
+        <div class="bottom">
+          <div class="tags">{''.join(bits)}</div>
+          <span class="cta mono">收录于 {esc(s['added'])}</span>
+        </div>
+      </article>""")
+
+    return f"""<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{esc(WEB_TITLE)}</title>
+<link rel="stylesheet" href="assets/style.css?v={css_ver}">
+{favicon_link()}
+</head>
+<body class="web">
+<header class="wrap">
+  <div class="topline">
+    <p class="eyebrow">Bookmarks · Web</p>
+    {mode_switch('web')}
+  </div>
+  <h1>{esc(WEB_TITLE)}</h1>
+  <p class="lede">{esc(WEB_SUBTITLE)}</p>
+  <div class="summary">
+    <div><span class="k">收录</span><span class="v">{len(sites)}</span></div>
+    <div><span class="k">更新</span><span class="v">{esc(now)}</span></div>
+  </div>
+</header>
+
+<div class="toolbar">
+  <div class="wrap">
+    <input id="q" type="search" placeholder="搜索网站、用途或适用范围（共 {len(sites)} 个）" autocomplete="off">
+  </div>
+</div>
+
+<main class="wrap">
+  <div class="grid" id="grid">
+{chr(10).join(cards)}
+  </div>
+  <p class="empty" id="empty" hidden>未找到匹配的网站。</p>
+</main>
+
+<footer class="wrap">
+  <p>这些条目不是开源项目，因此不参与星级评定；语言、费用与适用范围均按官网信息记录，可能随时间变动。</p>
+  <p class="mono">生成于 {esc(now)}</p>
+</footer>
+{LIST_JS}
+</body>
+</html>
+"""
+
+
+def build_site_detail(site: dict, now: str, css_ver: str) -> str:
+    meta = [f'<a href="{esc(site["url"])}" target="_blank" rel="noopener noreferrer">'
+            f'{esc(site["domain"])}</a>']
+    if site["lang"]:
+        meta.append(f'<span>语言：{esc(site["lang"])}</span>')
+    if site["price"]:
+        meta.append(f'<span>费用：{esc(site["price"])}</span>')
+    if site["scope"]:
+        meta.append(f'<span>适用范围：{esc(site["scope"])}</span>')
+    meta.append(f'<span class="mono">收录于 {esc(site["added"])}</span>')
+
+    return f"""<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{esc(site['title'])} · {esc(WEB_TITLE)}</title>
+<link rel="stylesheet" href="../assets/style.css?v={css_ver}">
+{favicon_link('../')}
+</head>
+<body class="web">
+<header class="wrap detail-head">
+  <div class="topline">
+    <a class="back" href="../web.html">← 返回列表</a>
+    {mode_switch('web', '../')}
+  </div>
+  <h1>{esc(site['title'])}</h1>
+  <p class="gh-row"><a class="gh-btn" href="{esc(site['url'])}" target="_blank"
+     rel="noopener noreferrer">打开网站 ↗</a></p>
+  <div class="meta">{''.join(meta)}</div>
+</header>
+<main class="wrap">
+  {site_warning(site)}
+  <p class="summary-line">{esc(site['one_liner'])}</p>
+  <article class="md">{md.render(site['body'])}</article>
+</main>
+<footer class="wrap">
+  <p class="mono">收录于 {esc(site['added'])} · 生成于 {esc(now)}</p>
+</footer>
+</body>
+</html>
+"""
+
+
 def main() -> int:
     for stream in (sys.stdout, sys.stderr):
         try:
@@ -408,9 +597,11 @@ def main() -> int:
 
     now = datetime.now().astimezone().strftime("%Y-%m-%d")
     (PUBLIC / "p").mkdir(parents=True, exist_ok=True)
+    (PUBLIC / "w").mkdir(parents=True, exist_ok=True)
     (PUBLIC / "assets").mkdir(parents=True, exist_ok=True)
     css_bytes = (ROOT / "web" / "style.css").read_bytes()
     (PUBLIC / "assets" / "style.css").write_bytes(css_bytes)
+    shutil.copyfile(ROOT / "web" / "favicon.svg", PUBLIC / "assets" / "favicon.svg")
     css_ver = hashlib.sha256(css_bytes).hexdigest()[:8]
     (PUBLIC / ".nojekyll").write_text("", encoding="utf-8")
 
@@ -422,8 +613,16 @@ def main() -> int:
     for entry in entries:
         (PUBLIC / "p" / f"{entry['slug']}.html").write_text(build_detail(entry, now, css_ver), encoding="utf-8")
 
+    sites = load_sites()
+    stale_w = {p.name for p in (PUBLIC / "w").glob("*.html")} - {f"{s['slug']}.html" for s in sites}
+    for name in stale_w:
+        (PUBLIC / "w" / name).unlink(missing_ok=True)
+    (PUBLIC / "web.html").write_text(build_web_index(sites, now, css_ver), encoding="utf-8")
+    for site in sites:
+        (PUBLIC / "w" / f"{site['slug']}.html").write_text(build_site_detail(site, now, css_ver), encoding="utf-8")
+
     dist = {i: sum(1 for e in entries if e["score"] == i) for i in range(1, len(CRITERIA) + 1)}
-    print("收录 %d 个 · 星级分布 %s" % (len(entries), dist))
+    print("开源 %d 个 · 星级分布 %s · 非开源 %d 个" % (len(entries), dist, len(sites)))
     return 0
 
 

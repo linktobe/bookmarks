@@ -9,10 +9,61 @@
   --line-soft:#efebe2;
   --accent:#a8431f;
   --mark:#f3efe5;
+  /* 语义色：深色模式下整体重定义，正文规则只用这些变量 */
+  --on-ink:#ffffff;
+  --body-text:#2b2c2e;
+  --tag-fg:#6d6a60;
+  --line-hover:#c9c2b4;
+  --field-focus:#c7c0b2;
+  --chip-hover:#cdc6b8;
+  --toolbar-bg:rgba(251,250,247,.95);
+  --toolbar-bg-solid:rgba(251,250,247,.99);
+  --code-bg:#16171a;
+  --code-fg:#e6e4dd;
+  --inline-code:#7a3a1e;
+  --ok:#2f6b3a;
+  --miss:#b8b3a8;
+  --bad:#b03a2e;
+  --warn:#8a5a15;
+  --archived:#8a7a5e;
+  --muted-line:#b3ada1;
+  --shadow:0 6px 18px rgba(23,24,26,.06);
   --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB",
          "Microsoft YaHei","Noto Sans CJK SC",sans-serif;
   --serif:Georgia,"Times New Roman","Songti SC","SimSun",serif;
   --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+}
+
+/* ---------- 非开源书签：整站深色 ---------- */
+body.web{
+  --paper:#141311;
+  --card:#1b1a17;
+  --ink:#ece9e2;
+  --muted:#a9a49a;
+  --faint:#85817a;
+  --line:#2f2c27;
+  --line-soft:#262420;
+  --accent:#d97755;
+  --mark:#232019;
+  --on-ink:#141311;
+  --body-text:#d8d4cb;
+  --tag-fg:#b6b1a6;
+  --line-hover:#4a463e;
+  --field-focus:#5a554b;
+  --chip-hover:#4f4a41;
+  --toolbar-bg:rgba(20,19,17,.95);
+  --toolbar-bg-solid:rgba(20,19,17,.99);
+  --code-bg:#0d0c0b;
+  --code-fg:#d8d4cb;
+  --inline-code:#e5a684;
+  --ok:#84b98d;
+  --miss:#4a463e;
+  --bad:#e07b6d;
+  --warn:#d3a55c;
+  --archived:#a89a80;
+  --muted-line:#4f4a41;
+  --shadow:0 6px 18px rgba(0,0,0,.5);
+  color-scheme:dark;
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
@@ -36,14 +87,27 @@ h1{font-family:var(--serif);font-size:clamp(34px,4.6vw,46px);line-height:1.08;
 .summary .k{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
 .summary .v{font-size:18px;font-variant-numeric:tabular-nums;font-weight:500}
 
+/* ---------- 收藏类型切换（右上角） ---------- */
+.topline{display:flex;align-items:center;justify-content:space-between;gap:18px;
+         margin-bottom:16px;flex-wrap:wrap}
+.topline .eyebrow{margin:0}
+.mode-switch{display:inline-flex;flex:none;border:1px solid var(--line);border-radius:2px;
+             background:var(--card);overflow:hidden}
+.mode-switch a{font-family:var(--mono);font-size:11px;line-height:1.2;letter-spacing:.04em;
+               padding:6px 11px;color:var(--muted)}
+.mode-switch a+a{border-left:1px solid var(--line)}
+.mode-switch a:hover{color:var(--ink);text-decoration:none}
+.mode-switch a[aria-current="page"]{background:var(--ink);color:var(--on-ink)}
+.mode-switch a[aria-current="page"]:hover{color:var(--on-ink)}
+
 /* ---------- 工具栏 ---------- */
-.toolbar{position:sticky;top:0;z-index:10;background:rgba(251,250,247,.95);
+.toolbar{position:sticky;top:0;z-index:10;background:var(--toolbar-bg);
          backdrop-filter:saturate(1.4) blur(8px);border-bottom:1px solid var(--line);
          padding:16px 0 14px}
 #q{width:100%;max-width:460px;border:1px solid var(--line);background:var(--card);
    color:var(--ink);padding:13px 16px;border-radius:2px;font-size:15px;font-family:var(--sans)}
 #q::placeholder{color:var(--faint)}
-#q:focus{outline:none;border-color:#c7c0b2}
+#q:focus{outline:none;border-color:var(--field-focus)}
 .tagbar{display:flex;align-items:flex-start;gap:14px;margin-top:10px}
 .chips{flex:1 1 auto;min-width:0;display:flex;gap:7px;flex-wrap:wrap;
        max-height:var(--row,27px);overflow:hidden;
@@ -60,8 +124,8 @@ h1{font-family:var(--serif);font-size:clamp(34px,4.6vw,46px);line-height:1.08;
 .chip{font:12.5px/1 var(--sans);border:1px solid var(--line);background:var(--card);
       color:var(--muted);padding:6px 11px;border-radius:999px;cursor:pointer;
       display:inline-flex;align-items:center;gap:6px}
-.chip:hover{border-color:#cdc6b8;color:var(--ink)}
-.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.chip:hover{border-color:var(--chip-hover);color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--on-ink)}
 .chip .n{font-family:var(--mono);font-size:10.5px;opacity:.6}
 
 /* ---------- 卡片网格 ---------- */
@@ -70,22 +134,28 @@ h1{font-family:var(--serif);font-size:clamp(34px,4.6vw,46px);line-height:1.08;
 .card{display:flex;flex-direction:column;text-decoration:none;color:inherit;
       background:var(--card);border:1px solid var(--line);border-radius:2px;
       padding:17px 19px 15px;transition:border-color .15s ease}
-.card:hover{border-color:#c9c2b4;text-decoration:none}
+.card:hover{border-color:var(--line-hover);text-decoration:none}
 .card[hidden]{display:none}
 .card .top{display:flex;justify-content:space-between;gap:10px;
            font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.02em}
 .card .lic{color:var(--faint)}
 .card h2{font-family:var(--serif);font-size:19px;font-weight:600;letter-spacing:-.01em;
          margin:11px 0 9px;line-height:1.25}
-.card .cn{margin:0 0 9px;font-size:14px;line-height:1.65;color:#2b2c2e}
+.card .cn{margin:0 0 9px;font-size:14px;line-height:1.65;color:var(--body-text)}
 .card .desc{margin:0 0 14px;font-size:12.5px;line-height:1.58;color:var(--faint);
             display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .card .bottom{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .tags{display:flex;gap:6px;flex-wrap:wrap}
 .tag{font-size:11px;padding:2px 7px;border-radius:2px;background:var(--mark);
-     color:#6d6a60;border:1px solid var(--line-soft)}
+     color:var(--tag-fg);border:1px solid var(--line-soft)}
 .cta{font-size:12px;color:var(--accent);white-space:nowrap}
 .empty{padding:56px 0;color:var(--faint);font-size:14px}
+
+/* ---------- 非开源条目：费用标记 ---------- */
+.tag.is-free{color:var(--ok)}
+.tag.is-paid{color:var(--warn)}
+.tag.is-unknown{color:var(--faint)}
+.card .gh.site{color:var(--accent)}
 
 /* ---------- 详情页 ---------- */
 .detail-head{padding:44px 0 26px;border-bottom:1px solid var(--line)}
@@ -100,9 +170,9 @@ h1{font-family:var(--serif);font-size:clamp(34px,4.6vw,46px);line-height:1.08;
 .restricted{margin:26px 0 70px;padding:20px 22px;background:var(--card);border:1px solid var(--line)}
 .restricted p{margin:0 0 12px;font-size:14px;color:var(--muted)}
 .restricted b{color:var(--ink)}
-.btn{display:inline-block;margin-top:4px;padding:9px 15px;background:var(--ink);color:#fff;
+.btn{display:inline-block;margin-top:4px;padding:9px 15px;background:var(--ink);color:var(--on-ink);
      font-size:13px;border-radius:2px}
-.btn:hover{text-decoration:none;background:#000}
+.btn:hover{text-decoration:none;opacity:.88}
 
 /* ---------- 正文（Markdown 渲染结果） ---------- */
 article.md{max-width:768px;padding:10px 0 90px;font-size:15.5px;line-height:1.78}
@@ -118,8 +188,8 @@ article.md blockquote{margin:0 0 16px;padding:2px 0 2px 16px;border-left:2px sol
                       color:var(--muted)}
 article.md blockquote p:last-child{margin-bottom:0}
 article.md code{font-family:var(--mono);font-size:.88em;background:var(--mark);
-                padding:1.5px 5px;border-radius:2px;color:#7a3a1e}
-article.md pre{background:#16171a;color:#e6e4dd;padding:15px 17px;border-radius:2px;
+                padding:1.5px 5px;border-radius:2px;color:var(--inline-code)}
+article.md pre{background:var(--code-bg);color:var(--code-fg);padding:15px 17px;border-radius:2px;
                overflow:auto;margin:0 0 18px;font-size:12.8px;line-height:1.65}
 article.md pre code{background:none;color:inherit;padding:0;font-size:inherit}
 article.md hr{border:0;border-top:1px solid var(--line);margin:28px 0}
@@ -142,7 +212,7 @@ footer .mono{color:var(--faint)}
 .card .top{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .card .repo{font-family:var(--mono);font-size:11px;color:var(--faint);
             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.card .cn{color:#2b2c2e;font-size:14.5px}
+.card .cn{color:var(--body-text);font-size:14.5px}
 .card .cta{font-size:11px;color:var(--faint);white-space:nowrap}
 .card .bottom{align-items:flex-end}
 
@@ -168,9 +238,9 @@ footer .mono{color:var(--faint)}
 .rubric-table td.mark{font-family:var(--mono);font-size:14px}
 .rubric-table td.name{width:96px;font-weight:600;white-space:nowrap}
 .rubric-table td.desc{color:var(--muted)}
-.rubric-table tr.hit td.mark{color:#2f6b3a}
+.rubric-table tr.hit td.mark{color:var(--ok)}
 .rubric-table tr.miss td{color:var(--faint)}
-.rubric-table tr.miss td.mark{color:#b8b3a8}
+.rubric-table tr.miss td.mark{color:var(--miss)}
 .rubric-table tr.miss td.name{font-weight:500}
 
 /* 评分表下方的说明 */
@@ -195,20 +265,20 @@ footer .mono{color:var(--faint)}
 
 /* ---------- 可点击标签 / 链接状态 ---------- */
 button.tag{font-family:var(--sans);cursor:pointer;position:relative;z-index:2}
-button.tag:hover{border-color:#c9c2b4;color:var(--ink)}
-a.tag:hover{text-decoration:none;border-color:#c9c2b4;color:var(--ink)}
-.card .gh.dead{color:#b03a2e;cursor:default}
-.card .gh.moved{color:#8a5a15}
+button.tag:hover{border-color:var(--line-hover);color:var(--ink)}
+a.tag:hover{text-decoration:none;border-color:var(--line-hover);color:var(--ink)}
+.card .gh.dead{color:var(--bad);cursor:default}
+.card .gh.moved{color:var(--warn)}
 
 .banner{margin:26px 0 0;padding:13px 16px;font-size:13.5px;line-height:1.75;
         background:var(--card);border:1px solid var(--line);border-left:2px solid var(--warn);border-radius:2px}
-.banner.bad{border-left-color:#b03a2e}
+.banner.bad{border-left-color:var(--bad)}
 .banner b{color:var(--ink)}
 .banner a{color:var(--accent)}
 .gh-btn.dead{cursor:default}
 .gh-btn.dead:hover{color:var(--faint)}
-.card .gh.archived{color:#8a7a5e}
-.banner.muted{border-left-color:#b3ada1}
+.card .gh.archived{color:var(--archived)}
+.banner.muted{border-left-color:var(--muted-line)}
 
 /* ============================================================
    动效：克制的入场与交互反馈
@@ -252,7 +322,7 @@ a.tag:hover{text-decoration:none;border-color:#c9c2b4;color:var(--ink)}
 
 /* 卡片悬停：轻微上浮 */
 .card{transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
-.card:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(23,24,26,.06)}
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
 .card:hover .stars{transform:scale(1.05)}
 .card:hover .gh{color:var(--accent);border-color:var(--accent)}
 .stars{display:inline-block;transition:transform .18s ease}
@@ -269,7 +339,7 @@ button.tag,a.tag{transition:background-color .15s ease,border-color .15s ease,co
 
 /* 顶栏滚动后加强分隔 */
 .toolbar{transition:background-color .25s ease}
-body.scrolled .toolbar{background:rgba(251,250,247,.99)}
+body.scrolled .toolbar{background:var(--toolbar-bg-solid)}
 
 /* 站内跳转的淡入淡出（支持的浏览器生效，其余忽略） */
 @view-transition{navigation:auto}
