@@ -355,10 +355,6 @@ def build_index(entries: list[dict], now: str, css_ver: str) -> str:
     <div><span class="k">标签</span><span class="v">{len(tags)}</span></div>
     <div><span class="k">更新</span><span class="v">{esc(now)}</span></div>
   </div>
-  <details class="rubric" open>
-    <summary>评分标准（五项各计一分）</summary>
-    <ol>{"".join(f"<li><b>{esc(label)}</b>{esc(desc)}</li>" for _k, label, desc in CRITERIA)}</ol>
-  </details>
 </header>
 
 <div class="toolbar">
@@ -393,6 +389,13 @@ def build_index(entries: list[dict], now: str, css_ver: str) -> str:
 </body>
 </html>
 """
+
+
+def strip_section(body: str, title: str) -> str:
+    """删掉正文里的某一节（从二级标题到下一个二级标题之前）。"""
+    pattern = re.compile(rf"^##[ \t]*{re.escape(title)}[ \t]*$.*?(?=^##[ \t]|\Z)",
+                         re.S | re.M)
+    return pattern.sub("", body).strip() + "\n"
 
 
 def build_detail(entry: dict, now: str, css_ver: str) -> str:
@@ -447,8 +450,8 @@ def build_detail(entry: dict, now: str, css_ver: str) -> str:
     <thead><tr><th>判定</th><th>标准</th><th>这个项目的情况</th></tr></thead>
     <tbody>{rows}</tbody>
   </table>
-  <p class="rubric-hint">表中各项均为该项目自身的判定说明；五项标准的通用定义见首页。</p>
-  <article class="md">{md.render(entry['body'])}</article>
+  <p class="rubric-hint">表中各项均为该项目自身的判定说明。</p>
+  <article class="md">{md.render(strip_section(entry['body'], '评分依据'))}</article>
 </main>
 <footer class="wrap">
   <p class="mono">收录于 {esc(entry['added'])} · 生成于 {esc(now)}</p>
