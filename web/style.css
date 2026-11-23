@@ -40,7 +40,7 @@ body.web{
   --card:#1b1a17;
   --ink:#ece9e2;
   --muted:#a9a49a;
-  --faint:#85817a;
+  --faint:#a49e93;
   --line:#2f2c27;
   --line-soft:#262420;
   --accent:#d97755;
@@ -225,7 +225,7 @@ footer .mono{color:var(--faint)}
 .card .repo{font-family:var(--mono);font-size:11px;color:var(--faint);
             overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .card .cn{color:var(--body-text);font-size:14.5px}
-.card .cta{font-size:11px;color:var(--faint);white-space:nowrap}
+.card .cta{font-size:11.5px;color:var(--faint);white-space:nowrap}
 .card .bottom{align-items:flex-end}
 
 .rubric{margin-top:22px;font-size:13px;color:var(--muted)}
