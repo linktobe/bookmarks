@@ -2,7 +2,7 @@
 title: 书格
 url: https://www.shuge.org/
 lang: 简体中文
-price: 免费（资源多为公共领域，另有捐赠与硬盘直递等方式支持）
+price: 免费
 scope: 古籍善本与字画的数字阅读
 tags: 古籍, 数字图书馆, 善本
 added: 2026-11-23

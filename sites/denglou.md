@@ -1,7 +1,7 @@
 ---
 title: 登樓古籍全文檢索
 url: https://tio.freemdict.com/denglou
-lang: 繁體中文（可自動轉換簡繁與異體字）
+lang: 繁體中文
 price: 免费
 scope: 古籍全文检索
 tags: 古籍, 检索, 工具

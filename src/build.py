@@ -252,6 +252,7 @@ def load_sites() -> list[dict]:
             "scope": meta.get("scope", ""),
             "added": meta.get("added", ""),
             "one_liner": meta.get("one_liner", ""),
+            "card": meta.get("card", ""),
             "tags": [t.strip() for t in (meta.get("tags") or "").split(",") if t.strip()],
             "link": links.get(url, {}),
             "body": body,
@@ -486,6 +487,7 @@ def build_web_index(sites: list[dict], now: str, css_ver: str) -> str:
             f'<button class="tag" type="button" data-tag="{esc(t)}">{esc(t)}</button>'
             for t in s["tags"])
         facts = " · ".join(x for x in (s["lang"], s["price"], s["scope"]) if x)
+        card_line = s.get("card") or facts
         searchable = " ".join([s["title"], s["one_liner"], s["domain"], facts,
                                " ".join(s["tags"])]).lower()
         cards.append(f"""      <article class="card" style="--i:{idx}"
@@ -500,7 +502,7 @@ def build_web_index(sites: list[dict], now: str, css_ver: str) -> str:
         <p class="cn">{esc(s['one_liner'])}</p>
         <div class="bottom">
           <div class="tags">{tags_html}</div>
-          <span class="cta mono wrap">{esc(facts)}</span>
+          <span class="cta mono">{esc(card_line)}</span>
         </div>
       </article>""")
 

@@ -1,10 +1,11 @@
 ---
 title: System Design 交互课程
 url: https://designed-to-scale.vercel.app/
-lang: 二十种（含简繁中文、英、日、韩等）
+lang: 二十种语言
 price: 免费
 scope: 后端系统设计入门与面试复习
 tags: 系统设计, 课程, 面试
+card: 二十种语言 · 免费 · 系统设计入门
 added: 2026-11-22
 one_liner: 把后端系统设计拆成四十节课的交互式课程，附练习、设计实验室与速查表。
 ---

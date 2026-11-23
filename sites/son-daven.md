@@ -1,10 +1,11 @@
 ---
 title: Son Daven
 url: https://sondaven.com/ua
-lang: 乌克兰语、英语（UA / EN 双语）
-price: 免费浏览（投资需洽谈）
+lang: 乌克兰语、英语（双语）
+price: 免费浏览
 scope: 喀尔巴阡度假酒店投资展示
 tags: 地产, 投资, 展示
+card: 乌克兰语、英语 · 免费浏览 · 酒店投资展示
 added: 2026-11-22
 one_liner: 乌克兰雅列姆切一处度假设计酒店的投资展示站，把收益预估、工期与演示材料放在同一页。
 ---
