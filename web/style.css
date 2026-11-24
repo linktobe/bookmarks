@@ -313,10 +313,14 @@ a.tag:hover{text-decoration:none;border-color:var(--line-hover);color:var(--ink)
   header .summary,header .rubric{animation:riseIn .55s cubic-bezier(.2,.7,.3,1) both;animation-delay:.19s}
   header .score,header .meta{animation:riseIn .5s cubic-bezier(.2,.7,.3,1) both;animation-delay:.05s}
 
-  /* 卡片：逐张升起 */
+  /* 卡片：逐张升起。错峰封顶 16 张，首屏之外的不再排队等待 */
   .card{animation:riseIn .5s cubic-bezier(.2,.7,.3,1) backwards;
-        animation-delay:calc(var(--i, 0) * 45ms + 120ms)}
-  .card.pop{animation:riseIn .38s cubic-bezier(.2,.7,.3,1) backwards;animation-delay:0s}
+        animation-delay:calc(min(var(--i, 0), 16) * 45ms + 120ms)}
+  /* 筛选后重新出现的卡片：按可见顺序轻推一下，封顶 8 张 */
+  .card.pop{animation:riseIn .38s cubic-bezier(.2,.7,.3,1) backwards;
+            animation-delay:calc(min(var(--i, 0), 8) * 24ms)}
+  /* 打字检索期间整片取消入场动画：结果即时出现，不被 --i 延迟拖住 */
+  .grid.noanim .card{animation:none}
 
   /* 筛选栏 */
   .toolbar{animation:fadeIn .4s ease-out both}

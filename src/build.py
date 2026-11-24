@@ -56,21 +56,25 @@ CRITERIA = [
 LIST_JS = """<script>
 (function () {
   var q = document.getElementById('q');
+  var grid = document.getElementById('grid');
   var cards = [].slice.call(document.querySelectorAll('.card'));
   var empty = document.getElementById('empty');
   var active = 'all';
   function apply(animate) {
     var text = q.value.trim().toLowerCase(), shown = 0;
+    if (grid) grid.classList.toggle('noanim', !animate);
     cards.forEach(function (c) {
       var ok = (!text || c.dataset.search.indexOf(text) !== -1)
         && (active === 'all' || (c.dataset.tags || '').split(' ').indexOf(active) !== -1);
-      if (ok && c.hidden) {
+      if (!ok) { c.hidden = true; return; }
+      if (c.hidden) {
         c.hidden = false;
-        if (animate) { c.classList.remove('pop'); void c.offsetWidth; c.classList.add('pop'); }
-      } else if (!ok) {
-        c.hidden = true;
+        if (animate) {
+          c.style.setProperty('--i', Math.min(shown, 8));
+          c.classList.remove('pop'); void c.offsetWidth; c.classList.add('pop');
+        }
       }
-      if (ok) shown++;
+      shown++;
     });
     empty.hidden = shown !== 0;
   }
