@@ -3,7 +3,7 @@ title: SuperHive
 repo: wangrongding/SuperHive
 license: AGPL-3.0
 language: TypeScript
-gh_stars: 712
+gh_stars: 785
 pushed: 2026-11-23
 added: 2026-11-23
 met: 开箱即用, 维护活跃, 文档充分, 版本规范
