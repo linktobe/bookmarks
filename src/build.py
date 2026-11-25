@@ -230,8 +230,10 @@ def load_entries() -> list[dict]:
         pushed = meta.get("pushed", "")
         live = fresh.get(path.stem) or {}
         if live.get("pushed"):
-            # 评分依据里的日期跟 pushed 保持一致，否则卡片与判定表会各说各话
-            if pushed and pushed != live["pushed"] and "why_alive" in whys:
+            # 评分依据里的日期跟随最新提交日期，但只改「维护活跃」成立的那类条目：
+            # 判为不通过时，那句话里的日期与结论是绑在一起的，改了会自相矛盾。
+            if (pushed and pushed != live["pushed"] and "alive" in keys
+                    and "why_alive" in whys):
                 whys["why_alive"] = whys["why_alive"].replace(pushed, live["pushed"])
             pushed = live["pushed"]
         if isinstance(live.get("stars"), int):

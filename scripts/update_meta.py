@@ -35,10 +35,13 @@ WORKERS = 8
 TIMEOUT = 20
 
 
-def read_repo(path: Path) -> str:
+def read_repo(path: Path) -> tuple[str, bool]:
+    """返回（仓库全名, 维护活跃是否判为通过）。"""
     text = path.read_text(encoding="utf-8", errors="replace")
     m = re.search(r"^---\s*$.*?^repo:\s*(\S+)\s*$", text, re.S | re.M)
-    return m.group(1) if m else ""
+    met = re.search(r"^met:\s*(.+)$", text, re.M)
+    alive = bool(met and "维护活跃" in met.group(1))
+    return (m.group(1) if m else ""), alive
 
 
 def fetch(repo: str) -> dict:
@@ -74,10 +77,12 @@ def main() -> int:
         return 0
 
     slugs = {}
+    alive_met = {}
     for path in sorted(ENTRIES.glob("*.md")):
-        repo = read_repo(path)
+        repo, alive = read_repo(path)
         if repo:
             slugs[path.stem] = repo
+            alive_met[path.stem] = alive
     if not slugs:
         print("entries/ 下没有带 repo 的条目。")
         return 0
@@ -124,6 +129,18 @@ def main() -> int:
         for s in result
         if result[s].get("pushed") and datetime.strptime(result[s]["pushed"], "%Y-%m-%d").replace(tzinfo=timezone.utc) < limit
     )
+    lapsed = sorted(          # 判了活跃、但确实很久没提交
+        f"{result[s]['pushed']} {s}"
+        for s in stale
+        if alive_met.get(s.split()[-1], False)
+    )
+    revived = sorted(         # 判了不活跃、但最近又动了
+        f"{result[s]['pushed']} {s}"
+        for s in result
+        if not alive_met.get(s, True)
+        and result[s].get("pushed")
+        and datetime.strptime(result[s]["pushed"], "%Y-%m-%d").replace(tzinfo=timezone.utc) >= limit
+    )
 
     print(f"刷新 {len(result) - len(failed)}/{len(slugs)} 个仓库"
           f"（相对上次变化 {changed} 条；比上次多出的条目为新增）")
@@ -132,8 +149,16 @@ def main() -> int:
     if archived:
         print("已归档：" + " ".join(archived))
     if stale:
-        print(f"超过 {STALE_DAYS} 天没有提交（维护活跃需复核）：")
+        print(f"超过 {STALE_DAYS} 天没有提交：{len(stale)} 条")
         for line in stale:
+            print("  " + line)
+    if lapsed:
+        print("「维护活跃」判为通过但已过期，需要复核：")
+        for line in lapsed:
+            print("  " + line)
+    if revived:
+        print("「维护活跃」判为不通过但最近有提交，需要复核：")
+        for line in revived:
             print("  " + line)
     return 0
 
