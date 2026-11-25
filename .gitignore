@@ -5,3 +5,4 @@ __pycache__/
 # 构建产物与本地状态，不进版本库
 public/
 data/link-status.json
+data/repo-meta.json

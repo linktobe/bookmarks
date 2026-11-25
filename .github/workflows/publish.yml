@@ -43,6 +43,19 @@ jobs:
           restore-keys: |
             link-status-
 
+      - name: 取回上次的仓库元数据
+        uses: actions/cache@v4
+        with:
+          path: data/repo-meta.json
+          key: repo-meta-${{ github.run_id }}
+          restore-keys: |
+            repo-meta-
+
+      - name: 刷新星标数与最近提交日期
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}   # 每仓库 1000 次/时的配额
+        run: python scripts/update_meta.py
+
       - name: 检查仓库与网站状态（24 小时内查过则跳过）
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}   # 配额 60/h → 5000/h

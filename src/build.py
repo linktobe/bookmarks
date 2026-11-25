@@ -200,8 +200,17 @@ def load_link_status() -> dict:
         return {}
 
 
+def load_repo_meta() -> dict:
+    """scripts/update_meta.py 抓回来的最新星标数与最近提交日期。"""
+    try:
+        return json.loads((ROOT / "data" / "repo-meta.json").read_text(encoding="utf-8")).get("repos", {})
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+
+
 def load_entries() -> list[dict]:
     links = load_link_status()
+    fresh = load_repo_meta()
     items: list[dict] = []
     for path in sorted(ENTRIES.glob("*.md")):
         meta, body = md.split_frontmatter(path.read_text(encoding="utf-8", errors="replace"))
@@ -218,6 +227,15 @@ def load_entries() -> list[dict]:
         except ValueError:
             gh_stars = 0
         whys = {k: v for k, v in meta.items() if k.startswith("why_")}
+        pushed = meta.get("pushed", "")
+        live = fresh.get(path.stem) or {}
+        if live.get("pushed"):
+            # 评分依据里的日期跟 pushed 保持一致，否则卡片与判定表会各说各话
+            if pushed and pushed != live["pushed"] and "why_alive" in whys:
+                whys["why_alive"] = whys["why_alive"].replace(pushed, live["pushed"])
+            pushed = live["pushed"]
+        if isinstance(live.get("stars"), int):
+            gh_stars = live["stars"]
         items.append({
             "slug": path.stem,
             "title": meta.get("title") or path.stem,
@@ -225,7 +243,7 @@ def load_entries() -> list[dict]:
             "license": meta.get("license", ""),
             "language": meta.get("language", ""),
             "gh_stars": gh_stars,
-            "pushed": meta.get("pushed", ""),
+            "pushed": pushed,
             "added": meta.get("added", ""),
             "one_liner": meta.get("one_liner", ""),
             "tags": [t.strip() for t in (meta.get("tags") or "").split(",") if t.strip()],
