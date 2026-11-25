@@ -2,6 +2,7 @@
 title: no hello
 url: https://nohello.net/zh-cn/
 lang: 多语言（含简体中文）
+repo: nohello-net/site
 price: 免费
 scope: 即时沟通的一条约定
 tags: 沟通, 效率, 参考

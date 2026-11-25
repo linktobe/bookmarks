@@ -101,6 +101,7 @@ python scripts/repo_info.py owner/repo
 | `scope` | 适用范围，一句话 |
 | `tags` | 主题标签，用于首页筛选；与开源栏同一套筛选组件 |
 | `card` | 可选。卡片右下角那句短述，不填则用「语言 · 费用 · 适用范围」 |
+| `repo` | 可选。该站对应的开源仓库（`owner/repo`），有则卡片多一个「开源 ↗」，详情页多一行地址 |
 
 ```markdown
 ---

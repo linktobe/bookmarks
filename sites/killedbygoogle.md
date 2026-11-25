@@ -2,6 +2,7 @@
 title: Killed by Google
 url: https://killedbygoogle.com/
 lang: 英文（单语种）
+repo: codyogden/killedbygoogle
 price: 免费（开源）
 scope: Google 已关停产品的清单
 tags: 科技, 归档, 数据

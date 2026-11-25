@@ -2,6 +2,7 @@
 title: three.js
 url: https://threejs.org/
 lang: 英文（单语种）
+repo: mrdoob/three.js
 price: 免费（MIT）
 scope: 浏览器三维渲染库的官方站
 tags: 前端, 图形, 3D

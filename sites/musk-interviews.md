@@ -2,6 +2,7 @@
 title: 马斯克全访谈
 url: https://elon.qiaomu.ai/
 lang: 中文（原文英文）
+repo: joeseesun/elon-musk-cn
 price: 免费
 scope: 长访谈档案的检索与中文精读
 tags: 访谈, 档案, 中文精读

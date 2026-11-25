@@ -277,6 +277,7 @@ def load_sites() -> list[dict]:
             "added": meta.get("added", ""),
             "one_liner": meta.get("one_liner", ""),
             "card": meta.get("card", ""),
+            "repo": (meta.get("repo") or "").strip(),
             "tags": [t.strip() for t in (meta.get("tags") or "").split(",") if t.strip()],
             "link": links.get(url, {}),
             "body": body,
@@ -512,14 +513,18 @@ def build_web_index(sites: list[dict], now: str, css_ver: str) -> str:
             for t in s["tags"])
         facts = " · ".join(x for x in (s["lang"], s["price"], s["scope"]) if x)
         card_line = s.get("card") or facts
+        src_link = ""
+        if s.get("repo"):
+            src_link = (f'<a class="gh src mono" href="https://github.com/{esc(s["repo"])}"'
+                        ' target="_blank" rel="noopener noreferrer">开源 ↗</a>')
         searchable = " ".join([s["title"], s["one_liner"], s["domain"], facts,
                                " ".join(s["tags"])]).lower()
         cards.append(f"""      <article class="card" style="--i:{idx}"
          data-tags="{esc(' '.join(s['tags']))}" data-search="{esc(searchable)}">
         <div class="top">
           <span class="site-mark mono">网站</span>
-          <a class="gh site mono" href="{esc(s['url'])}" target="_blank"
-             rel="noopener noreferrer">访问 ↗</a>
+          <span class="links">{src_link}<a class="gh site mono" href="{esc(s['url'])}" target="_blank"
+             rel="noopener noreferrer">访问 ↗</a></span>
         </div>
         <h2><a class="stretch" href="w/{s['slug']}.html">{esc(s['title'])}</a></h2>
         <p class="repo mono">{esc(s['domain'])}</p>
@@ -590,6 +595,9 @@ def build_web_index(sites: list[dict], now: str, css_ver: str) -> str:
 def build_site_detail(site: dict, now: str, css_ver: str) -> str:
     rows = [("网址", f'<a href="{esc(site["url"])}" target="_blank" '
                      f'rel="noopener noreferrer">{esc(site["domain"])}</a>')]
+    if site.get("repo"):
+        rows.append(("开源", f'<a href="https://github.com/{esc(site["repo"])}" target="_blank" '
+                            f'rel="noopener noreferrer">github.com/{esc(site["repo"])}</a>'))
     if site["lang"]:
         rows.append(("语言", esc(site["lang"])))
     if site["price"]:

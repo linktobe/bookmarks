@@ -2,6 +2,7 @@
 title: Qwerty Learner
 url: https://qwerty.kaiyi.cool/
 lang: 简体中文
+repo: RealKai42/qwerty-learner
 price: 免费（开源）
 scope: 打字与背单词结合的练习
 tags: 英语, 学习, 工具
