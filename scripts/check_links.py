@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 import json
+import ssl
 import sys
 import urllib.error
 import urllib.request
@@ -80,6 +81,24 @@ def check_site(url: str) -> dict:
             return {"status": "unknown", "code": exc.code, "error": "需要登录或被限流"}
         return {"status": "unknown", "code": exc.code}
     except Exception as exc:
+        reason = getattr(exc, "reason", None)
+        # 有些站只发叶证书、不附中间证书。浏览器会按证书里的 AIA 地址自动补齐，
+        # Python 不会，于是报「找不到本地签发者」。这不是站点故障，按可达处理并留记号。
+        if isinstance(reason, ssl.SSLCertVerificationError) \
+                and "local issuer certificate" in (reason.verify_message or ""):
+            ctx = ssl.create_default_context()
+            ctx.check_hostname = False
+            ctx.verify_mode = ssl.CERT_NONE
+            try:
+                with urllib.request.urlopen(req, timeout=25, context=ctx) as resp:
+                    return {"status": "ok", "code": resp.status, "tls": "chain-incomplete"}
+            except urllib.error.HTTPError as exc2:
+                if exc2.code in (404, 410):
+                    return {"status": "missing", "code": exc2.code, "tls": "chain-incomplete"}
+                return {"status": "unknown", "code": exc2.code, "tls": "chain-incomplete"}
+            except Exception as exc2:
+                return {"status": "unknown", "code": 0,
+                        "error": f"{type(exc2).__name__}: {exc2}"}
         return {"status": "unknown", "code": 0, "error": f"{type(exc).__name__}: {exc}"}
 
 
