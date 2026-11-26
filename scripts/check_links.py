@@ -10,6 +10,9 @@
   missing   404 / 410，打不开
   unknown   网络错误、限流、需要登录，不下结论
 
+网站先用浏览器 UA 请求；连响应头都拿不到时，换普通客户端标识再试一次，
+两次都没拿到响应头才记 unknown。
+
 默认 24 小时内不重复检查：上次结果还在文件里且未过期时直接跳过，加 --force 可强制重查。
 有 GITHUB_TOKEN 用 5000/h 配额，没有就走匿名 60/h——几十个仓库都够。
 任何单个条目失败都不会让脚本非零退出：链接坏了应该被标出来，而不是让整站发不出去。
@@ -37,6 +40,13 @@ MAX_AGE_HOURS = 24
 
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36")
+
+# 回落用的普通客户端标识。有些站点会掐掉「自称浏览器、指纹却不是浏览器」的请求，
+# 换一个明确的非浏览器 UA 反而放行；也有站点只拦 Python-urllib 这类默认标识，
+# 所以这里用自己的名字，不用库默认值。
+UA_PLAIN = "gh-collection/1.0"
+
+TIMEOUT = 25
 
 
 def hours_since_last_check() -> float | None:
@@ -66,20 +76,22 @@ def repo_of(path: Path) -> str:
     return field_of(path, "repo")
 
 
-def check_site(url: str) -> dict:
-    """直接访问网站首页：能打开就行，不判断内容。"""
-    if not url:
-        return {"status": "unknown", "code": 0, "error": "缺少 url"}
-    req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "text/html,*/*"})
+def probe_site(url: str, ua: str) -> tuple[dict | None, str]:
+    """用指定 UA 请求一次首页。
+
+    拿到 HTTP 响应头就返回（结论, ""）；连响应头都没拿到返回 (None, 原因)，
+    由调用方决定要不要换一个 UA 重试。
+    """
+    req = urllib.request.Request(url, headers={"User-Agent": ua, "Accept": "text/html,*/*"})
     try:
-        with urllib.request.urlopen(req, timeout=25) as resp:
-            return {"status": "ok", "code": resp.status}
+        with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:
+            return {"status": "ok", "code": resp.status}, ""
     except urllib.error.HTTPError as exc:
         if exc.code in (404, 410):
-            return {"status": "missing", "code": exc.code}
+            return {"status": "missing", "code": exc.code}, ""
         if exc.code in (401, 403, 429):
-            return {"status": "unknown", "code": exc.code, "error": "需要登录或被限流"}
-        return {"status": "unknown", "code": exc.code}
+            return {"status": "unknown", "code": exc.code, "error": "需要登录或被限流"}, ""
+        return {"status": "unknown", "code": exc.code}, ""
     except Exception as exc:
         reason = getattr(exc, "reason", None)
         # 有些站只发叶证书、不附中间证书。浏览器会按证书里的 AIA 地址自动补齐，
@@ -90,16 +102,36 @@ def check_site(url: str) -> dict:
             ctx.check_hostname = False
             ctx.verify_mode = ssl.CERT_NONE
             try:
-                with urllib.request.urlopen(req, timeout=25, context=ctx) as resp:
-                    return {"status": "ok", "code": resp.status, "tls": "chain-incomplete"}
+                with urllib.request.urlopen(req, timeout=TIMEOUT, context=ctx) as resp:
+                    return {"status": "ok", "code": resp.status, "tls": "chain-incomplete"}, ""
             except urllib.error.HTTPError as exc2:
                 if exc2.code in (404, 410):
-                    return {"status": "missing", "code": exc2.code, "tls": "chain-incomplete"}
-                return {"status": "unknown", "code": exc2.code, "tls": "chain-incomplete"}
+                    return {"status": "missing", "code": exc2.code, "tls": "chain-incomplete"}, ""
+                return {"status": "unknown", "code": exc2.code, "tls": "chain-incomplete"}, ""
             except Exception as exc2:
-                return {"status": "unknown", "code": 0,
-                        "error": f"{type(exc2).__name__}: {exc2}"}
-        return {"status": "unknown", "code": 0, "error": f"{type(exc).__name__}: {exc}"}
+                return None, f"{type(exc2).__name__}: {exc2}"
+        return None, f"{type(exc).__name__}: {exc}"
+
+
+def check_site(url: str) -> dict:
+    """直接访问网站首页：能打开就行，不判断内容。
+
+    先用浏览器 UA 请求；连响应头都拿不到时（连接被重置、握手被拒、域名不通），
+    换普通客户端标识再试一次——有些站点会掐掉「自称浏览器、指纹却不是浏览器」的
+    请求，对普通客户端反而放行。两次都拿不到响应头才记 unknown。
+    """
+    if not url:
+        return {"status": "unknown", "code": 0, "error": "缺少 url"}
+
+    result, why = probe_site(url, UA)
+    if result is not None:
+        return result
+
+    fallback, why2 = probe_site(url, UA_PLAIN)
+    if fallback is not None:
+        fallback["ua"] = "plain"
+        return fallback
+    return {"status": "unknown", "code": 0, "error": f"{why} · 普通标识同样失败：{why2}"}
 
 
 def check(repo: str) -> dict:
@@ -176,7 +208,8 @@ def main() -> int:
             continue
         result = check_site(url)
         site_items[url] = result
-        print(f"  {result['status']:9s} {url}")
+        note = "（浏览器 UA 被拒，普通标识可达）" if result.get("ua") == "plain" else ""
+        print(f"  {result['status']:9s} {url}{note}")
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now(timezone.utc).astimezone()
@@ -191,8 +224,9 @@ def main() -> int:
     broken = [r for r, v in items.items() if v["status"] in ("missing", "moved")]
     archived = [r for r, v in items.items() if v["status"] == "archived"]
     dead_sites = [u for u, v in site_items.items() if v["status"] == "missing"]
+    rescued = [u for u, v in site_items.items() if v.get("ua") == "plain"]
     print(f"\n仓库 {len(repos)} 个 · 失效/迁移 {len(broken)} · 已归档 {len(archived)}"
-          f" · 网站 {len(site_items)} 个 · 打不开 {len(dead_sites)}")
+          f" · 网站 {len(site_items)} 个 · 打不开 {len(dead_sites)} · 换标识可达 {len(rescued)}")
     if archived:
         print("  归档：" + ", ".join(archived))
     if dead_sites:
